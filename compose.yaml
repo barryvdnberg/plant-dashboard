@@ -1,0 +1,75 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_NAME: "Helix Garden"
+      APP_ENV: production
+      APP_KEY: ${APP_KEY:?Set APP_KEY in the deployment environment}
+      APP_DEBUG: "false"
+      APP_URL: https://helixgarden.com
+
+      LOG_CHANNEL: stack
+      LOG_LEVEL: error
+
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: helixgarden
+      DB_USERNAME: helixgarden
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the deployment environment}
+
+      SESSION_DRIVER: database
+      CACHE_STORE: file
+      QUEUE_CONNECTION: database
+
+    volumes:
+      - /volume1/docker/helixgarden/storage:/var/www/html/storage
+      - public-files:/var/www/html/public
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+
+    ports:
+      - "8081:80"
+
+    volumes:
+      - public-files:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - /volume1/docker/helixgarden/storage:/var/www/html/storage:ro
+
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: helixgarden
+      MYSQL_USER: helixgarden
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the deployment environment}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in the deployment environment}
+
+    volumes:
+      - /volume1/docker/helixgarden/mysql:/var/lib/mysql
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+volumes:
+  public-files:
