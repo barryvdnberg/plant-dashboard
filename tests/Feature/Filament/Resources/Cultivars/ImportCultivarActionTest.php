@@ -49,7 +49,7 @@ it('imports a cultivar into the create form and saves its related fields on a ne
 
     $properties = $source->properties()->create(['plant_type' => PlantType::SHRUB->value]);
     $properties->growthStyles()->create(['name' => GrowthPattern::SHRUB->value]);
-    $properties->traits()->create(['trait_index' => PlantTrait::HAS_SCENT->value]);
+    $properties->traits()->create(['trait_index' => PlantTrait::HAS_SCENT]);
     $properties->gardenStyles()->attach($style);
 
     $foliage = $source->foliage()->create(['retention' => LeafRetention::EVERGREEN, 'seasonal_color_change' => true]);
@@ -94,6 +94,7 @@ it('imports a cultivar into the create form and saves its related fields on a ne
         ->assertHasNoFormErrors();
 
     $imported = Cultivar::whereName('Imported cultivar')->firstOrFail();
+    $importedTrait = $imported->properties->traits()->sole();
     expect($imported->plant_id)->toBe($plant->id)
         ->and($imported->image_paths)->toBe([])
         ->and($imported->colors->modelKeys())->toBe([$springColor->id])
@@ -101,7 +102,8 @@ it('imports a cultivar into the create form and saves its related fields on a ne
         ->toBe(['language_id' => $english->id, 'field' => 'name', 'value' => 'Source translation', 'synonyms' => 'Source synonym'])
         ->and($imported->properties->plant_type)->toBe(PlantType::SHRUB->value)
         ->and($imported->properties->growthStyles()->pluck('name')->all())->toBe([GrowthPattern::SHRUB->value])
-        ->and($imported->properties->traits()->pluck('trait_index')->all())->toBe([PlantTrait::HAS_SCENT->value])
+        ->and($importedTrait->trait_index)->toBe(PlantTrait::HAS_SCENT)
+        ->and($importedTrait->getRawOriginal('trait_index'))->toBe(PlantTrait::HAS_SCENT->value)
         ->and($imported->properties->gardenStyles->modelKeys())->toBe([$style->id])
         ->and($imported->foliage->retention)->toBe(LeafRetention::EVERGREEN->value)
         ->and($imported->foliage->defaultColors->modelKeys())->toBe([$leafColor->id])
