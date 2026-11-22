@@ -17,7 +17,7 @@ use Filament\Forms\Components\Slider\Enums\PipsMode;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 
-class EnvironmentForm
+final class EnvironmentForm
 {
     public static function form(): array
     {

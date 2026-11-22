@@ -20,7 +20,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
-class PlantForm extends FormBuilder implements NameField, ParentField
+final class PlantForm extends FormBuilder implements NameField, ParentField
 {
     public static function nameField(): NameInput
     {

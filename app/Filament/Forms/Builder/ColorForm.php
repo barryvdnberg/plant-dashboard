@@ -9,7 +9,7 @@ use App\Filament\Forms\Components\LocalizeRepeater;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Components\Component;
 
-class ColorForm extends FormBuilder implements NameField
+final class ColorForm extends FormBuilder implements NameField
 {        
     public static function nameField(): Component
     {

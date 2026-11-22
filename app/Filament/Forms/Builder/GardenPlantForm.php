@@ -9,7 +9,7 @@ use App\Filament\Forms\Components\NameInput;
 use App\Filament\Forms\Components\NumberInput;
 use Filament\Schemas\Components\Component;
 
-class GardenPlantForm extends FormBuilder implements NameField
+final class GardenPlantForm extends FormBuilder implements NameField
 {
     public static function nameField(): Component
     {

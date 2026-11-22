@@ -9,7 +9,7 @@ use App\Filament\Forms\Components\Tooltip;
 use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Schema;
 
-class BloomingForm
+final class BloomingForm
 {
     public static function form(): array
     {

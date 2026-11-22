@@ -27,7 +27,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Support\Arr;
 
-class CultivarForm extends FormBuilder implements NameField, ParentField
+final class CultivarForm extends FormBuilder implements NameField, ParentField
 {
     public static FormOrder $order = FormOrder::PARENT_FIRST;
 

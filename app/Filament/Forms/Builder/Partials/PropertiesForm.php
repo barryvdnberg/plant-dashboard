@@ -11,7 +11,7 @@ use App\Filament\Forms\Components\Tooltip;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 
-class PropertiesForm
+final class PropertiesForm
 {
     public static function form(): array
     {

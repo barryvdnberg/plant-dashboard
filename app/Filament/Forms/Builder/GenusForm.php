@@ -11,7 +11,7 @@ use App\Filament\Forms\Components\LocalizeRepeater;
 use App\Filament\Forms\Components\NameInput;
 use Filament\Schemas\Components\Component;
 
-class GenusForm extends FormBuilder implements NameField, ParentField
+final class GenusForm extends FormBuilder implements NameField, ParentField
 {
     public static function nameField(): Component
     {

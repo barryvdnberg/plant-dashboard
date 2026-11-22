@@ -9,7 +9,7 @@ use App\Filament\Forms\Components\NameInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 
-class LanguageForm extends FormBuilder implements NameField
+final class LanguageForm extends FormBuilder implements NameField
 {
     public static function nameField(): Component
     {

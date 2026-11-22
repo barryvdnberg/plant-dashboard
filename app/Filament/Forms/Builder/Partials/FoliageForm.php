@@ -8,7 +8,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Group;
 
-class FoliageForm
+final class FoliageForm
 {
     public static function form(): array
     {

@@ -8,7 +8,7 @@ use App\Filament\Forms\Components\ImageUpload;
 use App\Filament\Forms\Components\LocalizeRepeater;
 use App\Filament\Forms\Components\NameInput;
 
-class SoilTypeForm extends FormBuilder implements NameField
+final class SoilTypeForm extends FormBuilder implements NameField
 {
     public static function nameField(): NameInput
     {

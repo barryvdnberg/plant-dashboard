@@ -13,7 +13,7 @@ use Filament\Schemas\Components\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class GardenForm extends FormBuilder implements NameField, ParentField
+final class GardenForm extends FormBuilder implements NameField, ParentField
 {
     public static function nameField(): Component
     {

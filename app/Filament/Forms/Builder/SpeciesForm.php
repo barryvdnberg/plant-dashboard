@@ -12,7 +12,7 @@ use App\Filament\Forms\Components\NameInput;
 use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Component;
 
-class SpeciesForm extends FormBuilder implements NameField, ParentField
+final class SpeciesForm extends FormBuilder implements NameField, ParentField
 {
     public static function nameField(): Component
     {

@@ -22,7 +22,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\Size;
 use Filament\Support\Icons\Heroicon;
 
-class MaintenanceForm
+final class MaintenanceForm
 {
     public static function form(): array
     {

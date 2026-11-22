@@ -11,7 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 
-class LocalizableForm extends FormBuilder
+final class LocalizableForm extends FormBuilder
 {
     public static function attributeFields(): array
     {

@@ -9,7 +9,7 @@ use App\Filament\Forms\Components\LocalizeRepeater;
 use App\Filament\Forms\Components\NameInput;
 use Filament\Schemas\Components\Component;
 
-class GardenStyleForm extends FormBuilder implements NameField
+final class GardenStyleForm extends FormBuilder implements NameField
 {
     public static function nameField(): Component
     {
