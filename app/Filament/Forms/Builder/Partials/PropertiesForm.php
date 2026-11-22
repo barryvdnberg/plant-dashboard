@@ -3,14 +3,11 @@
 namespace App\Filament\Forms\Builder\Partials;
 
 use App\Enums\GrowthPattern;
-use App\Enums\PlantTrait;
 use App\Enums\PlantType;
+use App\Filament\Forms\Components\ColoredCheckboxList;
 use App\Filament\Forms\Components\HasManySelect;
 use App\Filament\Forms\Components\RelationshipSelect;
 use App\Filament\Forms\Components\Tooltip;
-use App\Filament\Forms\Components\ColoredCheckboxList;
-use App\Models\PlantProperties;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 
@@ -37,31 +34,10 @@ class PropertiesForm
 
             ColoredCheckboxList::make('plant_traits')
                 ->label(__('attributes.Plant_traits'))
-                ->options(PlantTrait::class)
+                ->relationship('traits', 'trait_index')
                 ->columns(3)
                 ->searchable()
-                ->bulkToggleable()
-                ->afterStateHydrated(function (CheckboxList $component, $record) {
-                    if (!$record) return;
-                    if (!$record instanceof PlantProperties) return;
-
-                    $component->state(
-                        $record->traits()->pluck('trait_index')
-                    );
-                })
-                ->dehydrateStateUsing(fn (array|null $state) => $state ?? [])
-                ->saveRelationshipsUsing(function (array $state, $record) {
-                    if (!$record) return;
-                    if (!$record instanceof PlantProperties) return;
-
-                    $record->traits()->delete();
-
-                    foreach ($state as $trait) {
-                        $record->traits()->create([
-                            'trait_index' => $trait,
-                        ]);
-                    }
-                })
+                ->bulkToggleable(),
         ];
     }
 }
