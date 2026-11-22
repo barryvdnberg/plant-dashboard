@@ -63,11 +63,11 @@ class CultivarForm extends FormBuilder implements NameField, ParentField
                 RelationshipTab::make()
                     ->label(PlantProperties::getModelLabel())
                     ->schema(PropertiesForm::form())
-                    ->relationship('properties', fn (?array $state): bool => CultivarForm::hasFilledFields($state ?? [])),
+                    ->relationship('properties', fn (?array $state): bool => self::hasFilledFields($state)),
                 RelationshipTab::make()
                     ->label(Foliage::getModelLabel())
                     ->schema(FoliageForm::form())
-                    ->relationship('foliage', fn (?array $state): bool => CultivarForm::hasFilledFields($state ?? [])),
+                    ->relationship('foliage', fn (?array $state): bool => self::hasFilledFields($state)),
                 RelationshipTab::make()
                     ->label(PlantEnvironment::getModelLabel())
                     ->schema(EnvironmentForm::form())
@@ -80,7 +80,7 @@ class CultivarForm extends FormBuilder implements NameField, ParentField
                 RelationshipTab::make()
                     ->label(PlantBlooming::getModelLabel())
                     ->schema(BloomingForm::form())
-                    ->relationship('blooming', fn (?array $state): bool => CultivarForm::hasFilledFields($state ?? [])),
+                    ->relationship('blooming', fn (?array $state): bool => self::hasFilledFields($state)),
                 Tab::make()
                     ->label(PlantMaintenance::getModelLabel())
                     // relationship is handled within the MaintenanceForm repeater
@@ -97,8 +97,12 @@ class CultivarForm extends FormBuilder implements NameField, ParentField
         ];
     }
 
-    private static function hasFilledFields(array $state)
+    private static function hasFilledFields(mixed $state): bool
     {
+        if (! is_array($state)) {
+            return false;
+        }
+
         return filled(array_filter(
             Arr::except($state, ['id', 'cultivar_id', 'created_at', 'updated_at'])
         ));
