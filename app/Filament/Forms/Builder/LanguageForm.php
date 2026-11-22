@@ -20,7 +20,9 @@ final class LanguageForm extends FormBuilder implements NameField
     {
         return [
             TextInput::make('code'),
+
             TextInput::make('english_name'),
+            
             LocalizeRepeater::make('localizations')
         ];
     }

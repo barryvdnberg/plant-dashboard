@@ -2,6 +2,7 @@
 
 namespace App\Filament\Forms\Builder;
 
+use App\Enums\HardinessZone;
 use App\Filament\Forms\Builder\Contracts\NameField;
 use App\Filament\Forms\Builder\Contracts\ParentField;
 use App\Filament\Forms\Builder\FormBuilder;
@@ -25,10 +26,10 @@ final class GardenForm extends FormBuilder implements NameField, ParentField
     {
         return Select::make('user_id')
             ->relationship('user', 'name')
-            ->visible(fn () => Gate::allows('assignOwner', Garden::class))
+            ->visible(fn (): bool => Gate::allows('assignOwner', Garden::class))
             ->required()
             ->exists('users', 'id')
-            ->default(function () {
+            ->default(function (): int|string|null {
                 $id = Auth::id();
                 if (User::find($id)) {
                     return $id;
@@ -43,7 +44,7 @@ final class GardenForm extends FormBuilder implements NameField, ParentField
         return [
             Select::make('winter_hardiness')
                 ->label(__('attributes.Winter_hardiness'))
-                ->options(\App\Enums\HardinessZone::class)
+                ->options(HardinessZone::class)
                 ->columnSpanFull()
                 ->required(),
         ];

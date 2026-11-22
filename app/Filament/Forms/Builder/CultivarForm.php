@@ -73,9 +73,10 @@ final class CultivarForm extends FormBuilder implements NameField, ParentField
                     ->schema(EnvironmentForm::form())
                     ->relationship('environment', function (?array $state): bool {
                         $state ??= [];
-                        CultivarForm::parsePhFieldDefault($state);
+                        
+                        self::parsePhFieldDefault($state);
 
-                        return CultivarForm::hasFilledFields($state);
+                        return self::hasFilledFields($state);
                     }),
                 RelationshipTab::make()
                     ->label(PlantBlooming::getModelLabel())

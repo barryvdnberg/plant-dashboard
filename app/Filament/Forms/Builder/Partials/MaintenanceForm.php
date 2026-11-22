@@ -32,10 +32,10 @@ final class MaintenanceForm
                 ->hiddenLabel()
                 ->relationship()
                 ->options(GrowthPattern::class)
-                ->disableOptionWhen(static::notInEnabledGrowthPatterns())
+                ->disableOptionWhen(self::notInEnabledGrowthPatterns())
                 ->keyFieldName('group')
                 ->default([['group' => 'default']])
-                ->schema(MaintenanceForm::getRepeaterContent())
+                ->schema(self::getRepeaterContent())
                 ->cloneable()
                 ->itemDeletable(static fn (array $item): bool => ($item['group'] ?? null) !== 'default')
                 ->itemEditable(static fn (array $item): bool => ($item['group'] ?? null) !== 'default')/** */
@@ -134,7 +134,7 @@ final class MaintenanceForm
 
     private static function enabledGrowthPatterns(Get $get): array
     {
-        if (static::$enabledGrowthPatterns === null) {
+        if (self::$enabledGrowthPatterns === null) {
             $enabledEnums = collect($get('properties.growth_styles'))->mapWithKeys(fn (GrowthPattern $pattern) => [
                 $pattern->value => $pattern->getLabel(),
             ])->all();
@@ -143,16 +143,16 @@ final class MaintenanceForm
                 $enabledEnums['default'] = __('enums.growth_pattern.default');
             }
 
-            static::$enabledGrowthPatterns = $enabledEnums;
+            self::$enabledGrowthPatterns = $enabledEnums;
         }
 
-        return static::$enabledGrowthPatterns ?? [];
+        return self::$enabledGrowthPatterns ?? [];
     }
 
     private static function notInEnabledGrowthPatterns(): Closure
     {
-        return function (Get $get, null|string $value) {
-            return ! in_array($value, array_keys(static::enabledGrowthPatterns($get)));
+        return function (Get $get, ?string $value): bool {
+            return ! in_array($value, array_keys(self::enabledGrowthPatterns($get)));
         };
     }
 }

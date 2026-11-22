@@ -9,7 +9,6 @@ use App\Filament\Forms\Components\BelongsToSelect;
 use App\Filament\Forms\Components\ImageUpload;
 use App\Filament\Forms\Components\LocalizeRepeater;
 use App\Filament\Forms\Components\NameInput;
-use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Component;
 
 final class SpeciesForm extends FormBuilder implements NameField, ParentField

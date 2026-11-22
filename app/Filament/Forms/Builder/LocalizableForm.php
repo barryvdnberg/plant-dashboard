@@ -26,7 +26,9 @@ final class LocalizableForm extends FormBuilder
 
             NumberInput::make('localizable_id')
                 ->required(),
+
             TextInput::make('field'),
+
             Textarea::make('value')
                 ->required()
                 ->columnSpanFull()

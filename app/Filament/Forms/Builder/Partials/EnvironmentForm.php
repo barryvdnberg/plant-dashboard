@@ -29,7 +29,7 @@ final class EnvironmentForm
                         ->withLocalization()
                         ->addLocalizationCoalesce(SelectMode::OnlyKeepId);
                 })
-                ->getOptionLabelFromRecordUsing(fn (SoilType $record) => $record->_label)
+                ->getOptionLabelFromRecordUsing(fn (SoilType $record): string => $record->_label)
                 ->columns(3),
 
             Select::make('winter_hardiness')

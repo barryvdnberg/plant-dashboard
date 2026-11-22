@@ -20,6 +20,7 @@ final class ColorForm extends FormBuilder implements NameField
     {
         return [
             LocalizeRepeater::make('localizations'),
+            
             ColorPicker::make('hex_value')
                 ->format('hex')
                 ->required()

@@ -21,7 +21,7 @@ final class FoliageForm
                 ->label(__('attributes.Leaf_colors'))
                 ->pivotData(['tag' => 'default']),
 
-            CheckBox::make('seasonal_color_change')
+            Checkbox::make('seasonal_color_change')
                 ->label(__('attributes.Seasonal_color_change')),
 
             Group::make([

@@ -6,7 +6,6 @@ use App\Enums\Month;
 use App\Filament\Forms\Components\ColorSelect;
 use App\Filament\Forms\Components\HasManySelect;
 use App\Filament\Forms\Components\Tooltip;
-use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Schema;
 
 final class BloomingForm
