@@ -18,7 +18,12 @@ class LocalizableForm extends FormBuilder
         return [
             BelongsToSelect::make('language_id')
                 ->required(),
-            static::getLocalizableTypeComponent(),
+
+            Select::make('localizable_type')
+                ->options(fn (): array => Localizable::getImplementedModels())
+                ->required()
+                ->rules(self::getUniqueCombinationRule()),
+
             NumberInput::make('localizable_id')
                 ->required(),
             TextInput::make('field'),
@@ -26,22 +31,6 @@ class LocalizableForm extends FormBuilder
                 ->required()
                 ->columnSpanFull()
         ];
-    }
-
-    private static function getLocalizableTypeComponent(): Select
-    {
-        return Select::make('localizable_type')
-            ->options(function () {
-                $models = Localizable::getImplementedModels();
-
-                $options = [];
-                foreach ($models as $model) {
-                    $options[$model] = $model;
-                }
-                return $options;
-            })
-            ->required()
-            ->rules(self::getUniqueCombinationRule());
     }
 
     private static function getUniqueCombinationRule(): Closure
