@@ -20,7 +20,9 @@ final class GardenPlantForm extends FormBuilder implements NameField
     {
         return [
             BelongsToSelect::make('garden_id'),
+            
             BelongsToSelect::make('cultivar_id'),
+            
             NumberInput::make('size')
                 ->minValue(0)
                 ->maxValue(999999.99)

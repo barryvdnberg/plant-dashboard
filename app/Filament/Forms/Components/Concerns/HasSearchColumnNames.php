@@ -5,11 +5,17 @@ namespace App\Filament\Forms\Components\Concerns;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 
-// overide the base Select getSearchColumns method to use custom column names
+/**
+ * Overrides the base Select getSearchColumns method to use custom column names.
+ * Also allows dynamic evaluation of column names using a Closure.
+ */
 trait HasSearchColumnNames
 {
     protected array | Arrayable | string | Closure | null $searchColumnNames;
     
+    /**
+     * @param  array<string> | string | Closure | null  $columnNames
+     */
     public function searchColumnNames(array | string | Closure | null $columnNames): static
     {
         $this->searchColumnNames = $columnNames;
@@ -18,11 +24,10 @@ trait HasSearchColumnNames
     }
 
     /**
-     * @return array<string>
+     * @return array<string> | null
      */
     public function getSearchColumns(): ?array
     {
-        // overides the base Select getSearchColumns method to use custom column names
         $columns = $this->evaluate($this->searchColumnNames);
 
         if ($this->hasRelationship() && (filled($relationshipTitleAttribute = $this->getRelationshipTitleAttribute()))) {

@@ -13,7 +13,10 @@ trait HasEmptySchema
 {
     protected ?Closure $modifyEmptySchemaUsing = null;
 
-    public function emptySchema(array|Schema|Component|Action|ActionGroup|string|Htmlable|Closure|null $schema = null): static
+    /**
+     * @param  array<Component | Action | ActionGroup | string | Htmlable> | Schema | Component | Action | ActionGroup | string | Htmlable | Closure | null  $schema
+     */
+    public function emptySchema(array | Schema | Component | Action | ActionGroup | string | Htmlable | Closure | null $schema): static
     {
         return $this->childComponents($schema, 'empty-schema');
     }

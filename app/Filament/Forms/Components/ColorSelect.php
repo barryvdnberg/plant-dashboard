@@ -23,12 +23,13 @@ class ColorSelect extends Select
         $this->multiple();
         $this->relationship();
         $this->dehydrated(false);
-        $this->default(fn (self $component) => $component->isMultiple() ? [] : null);
-        $this->label(fn (self $component) => $component->isMultiple() ? Color::getPluralModelLabel() : Color::getModelLabel());
+        $this->default(static fn (self $component): array|null => $component->isMultiple() ? [] : null);
+        $this->label(static fn (self $component): string => $component->isMultiple() ? Color::getPluralModelLabel() : Color::getModelLabel());
 
         $this->loadStateFromRelationshipsUsing(static function (self $component): void {
             $component->fillStateFromRelationship();
         });
+
         $this->saveRelationshipsUsing(static function (self $component): void {
             $component->saveStateToRelationship();
         });
@@ -49,7 +50,7 @@ class ColorSelect extends Select
 
         // Replace all four callbacks when switching configuration, so catalog
         // options and custom relationship queries cannot leak into each other.
-        $this->options(static function (ColorSelect $component) use ($usesCatalog) {
+        $this->options(static function (ColorSelect $component) use ($usesCatalog): ?array {
             if (! $usesCatalog) {
                 return $component->getOptionsFromRelationship();
             }
@@ -63,11 +64,11 @@ class ColorSelect extends Select
             }
 
             return Color::localizedMap()
-                ->filter(fn ($label): bool => Str::contains($label, $search ?? '', ignoreCase: true))
+                ->filter(static fn ($label): bool => Str::contains($label, $search ?? '', ignoreCase: true))
                 ->all();
         });
 
-        $this->getOptionLabelUsing(static function (ColorSelect $component, mixed $value) use ($usesCatalog) {
+        $this->getOptionLabelUsing(static function (ColorSelect $component, mixed $value) use ($usesCatalog): ?string {
             if (! $usesCatalog) {
                 return $component->getRelationshipOptionLabels(Arr::wrap($value))[$value] ?? null;
             }
@@ -123,7 +124,7 @@ class ColorSelect extends Select
         }
 
         $ids = $relationship->pluck($relationship->getRelated()->qualifyColumn($relationship->getRelatedKeyName()))
-            ->map(fn ($id): int => (int) $id)->all();
+            ->map(static fn ($id): int => (int) $id)->all();
 
         // Query the scoped relationship even when the unscoped relation has
         // been eager loaded, so selections from other pivot scopes stay separate.

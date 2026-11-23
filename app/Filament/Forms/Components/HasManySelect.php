@@ -22,7 +22,7 @@ class HasManySelect extends Select
         $this->relationship = $name;
         $this->relationshipTitleAttribute = $valueColumn;
 
-        $this->afterStateHydrated(static function (HasManySelect $component, ?Model $record) {
+        $this->afterStateHydrated(static function (HasManySelect $component, ?Model $record): void {
             if (!$record) {
                 return;
             }

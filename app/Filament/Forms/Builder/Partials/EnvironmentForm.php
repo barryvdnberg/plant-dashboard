@@ -24,7 +24,7 @@ final class EnvironmentForm
         return [
             CheckboxList::make('soil_types')
                 ->label(SoilType::getModelLabel())
-                ->relationship('soilTypes', 'name', modifyQueryUsing: function (Builder $query) {
+                ->relationship('soilTypes', 'name', modifyQueryUsing: function (Builder $query): void {
                     $query
                         ->withLocalization()
                         ->addLocalizationCoalesce(SelectMode::OnlyKeepId);

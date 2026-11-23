@@ -21,7 +21,7 @@ class ColoredCheckboxList extends CheckboxList
 
     protected string $view = 'filament.forms.components.checkbox-list';
 
-    public function relationship(string|Closure|null $name = null, string|Closure|null $titleAttribute = null, ?Closure $modifyQueryUsing = null): static
+    public function relationship(string | Closure | null $name = null, string | Closure | null $titleAttribute = null, ?Closure $modifyQueryUsing = null): static
     {
         parent::relationship($name, $titleAttribute, $modifyQueryUsing);
         // options set by the parent relationship method.
@@ -123,7 +123,7 @@ class ColoredCheckboxList extends CheckboxList
             ->unique()
             ->all();
 
-        $parent->getConnection()->transaction(function () use ($parent, $relationship, $column, $valueColumn, $selected): void {
+        $parent->getConnection()->transaction(static function () use ($parent, $relationship, $column, $valueColumn, $selected): void {
             // serialize changes to the selection for this parent.
             $parent->newModelQuery()->whereKey($parent->getKey())->lockForUpdate()->firstOrFail([$parent->getKeyName()]);
 
@@ -164,7 +164,7 @@ class ColoredCheckboxList extends CheckboxList
             filled($enum = $this->getEnum()) &&
             is_a($enum, HasColor::class, allow_string: true)
         ) {
-            $colors = array_reduce($enum::cases(), function (array $carry, HasColor&UnitEnum $case): array {
+            $colors = array_reduce($enum::cases(), static function (array $carry, HasColor&UnitEnum $case): array {
                 if (filled($color = $case->getColor())) {
                     $carry[$case->value ?? $case->name] = $color;
                 }

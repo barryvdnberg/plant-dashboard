@@ -32,7 +32,7 @@ class LocalizeRepeater extends Repeater
         $this->label(__('attributes.Localizations'));
         $this->columnSpanFull();
         $this->compact();
-        $this->deleteAction(fn (Action $action) => $action->requiresConfirmation());
+        $this->deleteAction(static fn (Action $action) => $action->requiresConfirmation());
         $this->table([
             TableColumn::make(__('attributes.Language'))
                 ->markAsRequired(),
@@ -45,12 +45,12 @@ class LocalizeRepeater extends Repeater
             Hidden::make('field')->default('name'),
             Select::make('language_id')
                 ->required()
-                ->options(fn () => $this->languageOptions())
+                ->options(fn (): array => $this->languageOptions())
                 ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
             TextInput::make('value')->required(),
             TextInput::make('synonyms'),
         ]);
-        $this->default(function () {
+        $this->default(static function (): array {
             $defaultLanguageIds = Language::query()
                 ->whereIn('code', ['nl', 'en'])
                 ->pluck('id')
@@ -58,7 +58,7 @@ class LocalizeRepeater extends Repeater
                 ->toArray();
 
             return collect($defaultLanguageIds)
-                ->map(fn ($id) => ['language_id' => $id])
+                ->map(static fn ($id): array => ['language_id' => $id])
                 ->toArray();
         });
         $this->orderColumn();
@@ -71,7 +71,7 @@ class LocalizeRepeater extends Repeater
 
         return $query
             ->get()
-            ->mapWithKeys(fn ($language) => [
+            ->mapWithKeys(static fn ($language): array => [
                 $language->id => $language->name == $language->translated_name
                     ? "{$language->name}"
                     : "{$language->name} ({$language->translated_name})",

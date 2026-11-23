@@ -87,7 +87,7 @@ final class PlantForm extends FormBuilder implements NameField, ParentField
     {
         return Action::make('generate')
             ->label(__('Generate'))
-            ->action(function (Set $set, Get $get) {
+            ->action(function (Set $set, Get $get): void {
                 $species = Species::find($get('species_id'));
 
                 if (! $species) {

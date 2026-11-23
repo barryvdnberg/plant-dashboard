@@ -36,7 +36,7 @@ trait HasLabels
             enum_exists($enum = $options)
         ) {
             if (is_a($enum, LabelInterface::class, allow_string: true)) {
-                return array_reduce($enum::cases(), function (array $carry, LabelInterface & UnitEnum $case): array {
+                return array_reduce($enum::cases(), function (array $carry, LabelInterface&UnitEnum $case): array {
                     $carry[$case->value ?? $case->name] = $case->getLabel() ?? $case->name;
 
                     return $carry;

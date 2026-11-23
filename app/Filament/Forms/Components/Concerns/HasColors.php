@@ -23,6 +23,9 @@ trait HasColors
         return $this;
     }
 
+    /**
+     * @return array<string | Htmlable>
+     */
     public function getColors(): array
     {
         $colors = $this->evaluate($this->colors) ?? [];

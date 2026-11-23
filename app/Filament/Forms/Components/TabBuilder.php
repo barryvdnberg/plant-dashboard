@@ -104,8 +104,8 @@ class TabBuilder extends Field implements \Filament\Schemas\Components\Contracts
         });
         $this->mutateDehydratedStateUsing(static fn (self $component, ?array $state): array => $component->dehydrateItems($state));
         $this->registerActions([
-            fn (self $component): Action => $component->getAddAction(),
-            fn (self $component): Action => $component->getDeleteAction(),
+            static fn (self $component): Action => $component->getAddAction(),
+            static fn (self $component): Action => $component->getDeleteAction(),
         ]);
     }
 

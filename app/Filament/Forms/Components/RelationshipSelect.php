@@ -28,7 +28,7 @@ class RelationshipSelect extends Select
         parent::relationship(
             $name,
             $titleAttribute,
-            static function (Builder $query, $component) use ($modifyQueryUsing) {
+            static function (Builder $query, RelationshipSelect $component) use ($modifyQueryUsing) {
                 if ($component->relationshipHasLocalization()) {
                     $query
                         ->withLocalization()

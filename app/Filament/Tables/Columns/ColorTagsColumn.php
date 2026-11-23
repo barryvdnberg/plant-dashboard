@@ -50,7 +50,7 @@ class ColorTagsColumn extends Column
 
             if ($ids->isNotEmpty()) {
 
-                $colors->transform(function (Color $color) use ($localizedColorLabels) {
+                $colors->transform(static function (Color $color) use ($localizedColorLabels) {
                     if ($localizedColorLabels->has($color->id)) {
                         $color->translation = $localizedColorLabels->get($color->id);
                     }

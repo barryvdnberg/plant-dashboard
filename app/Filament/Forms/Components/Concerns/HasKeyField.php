@@ -2,7 +2,6 @@
 
 namespace App\Filament\Forms\Components\Concerns;
 
-use App\Enums\GrowthPattern;
 use Closure;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Hidden;

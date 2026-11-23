@@ -3,6 +3,9 @@
 namespace App\Filament\Forms\Components\Concerns;
 
 use Closure;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Field;
+use Illuminate\Support\Facades\Gate;
 
 trait RelationshipCanHaveFormSchema
 {
@@ -10,7 +13,6 @@ trait RelationshipCanHaveFormSchema
 
     protected Closure | bool $enableEditOptionForm = false;
 
-    /** @var string|null $formSchemaClass */
     protected ?string $formSchemaClass = null;
 
     protected ?array $formSchema = null;
@@ -58,11 +60,11 @@ trait RelationshipCanHaveFormSchema
     public function formSchemaClass(string $class): static
     {
         // check if the class exists and has a static form() method
-        if (!class_exists($class)) {
+        if (! class_exists($class)) {
             throw new \InvalidArgumentException("Form schema class {$class} does not exist.");
         }
 
-        if (!method_exists($class, 'form')) {
+        if (! method_exists($class, 'form')) {
             throw new \InvalidArgumentException("Form schema class {$class} must have a static form() method.");
         }
 
@@ -122,16 +124,18 @@ trait RelationshipCanHaveFormSchema
     protected function configureCreateOptionForm(): void
     {
         $this->createOptionForm(fn () => $this->getFormSchema());
-        $this->createOptionAction(fn (\Filament\Actions\Action $action) => $action
-            ->authorize(static fn ($component) => \Illuminate\Support\Facades\Gate::allows('create', $component->getRelationship()->getRelated()::class)));
+        $this->createOptionAction(static fn (Action $action) => $action
+            ->authorize(static fn (Field $component) => Gate::allows('create', $component->getRelationship()->getRelated()::class)));
         $this->enableCreateOptionForm();
     }
 
     protected function configureEditOptionForm(): void
     {
         $this->editOptionForm(fn () => $this->getFormSchema());
-        $this->editOptionAction(fn (\Filament\Actions\Action $action) => $action
-            ->authorize(static fn ($component) => ($record = $component->getSelectedRecord()) && \Illuminate\Support\Facades\Gate::allows('update', $record)));
+        $this->editOptionAction(static fn (Action $action) => $action
+            // for now this is kinda hard wired to the Select component, as it relies on getSelectedRecord() method
+            // the trait is not used in any other type of component so this is fine for now
+            ->authorize(static fn (Field $component) => ($record = $component->getSelectedRecord()) && Gate::allows('update', $record)));
         $this->enableEditOptionForm();
     }
 }

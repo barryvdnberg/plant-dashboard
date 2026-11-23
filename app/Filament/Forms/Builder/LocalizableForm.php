@@ -10,6 +10,7 @@ use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Utilities\Get;
 
 final class LocalizableForm extends FormBuilder
 {
@@ -37,7 +38,7 @@ final class LocalizableForm extends FormBuilder
 
     private static function getUniqueCombinationRule(): Closure
     {
-        return fn ($get): Closure => function (Closure $fail) use ($get) {
+        return fn (Get $get): Closure => function (Closure $fail) use ($get): void {
             $model = Localizable::query()
                 ->where([
                     'localizable_type' => $get('localizable_type'),
