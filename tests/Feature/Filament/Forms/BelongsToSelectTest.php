@@ -1,9 +1,12 @@
 <?php
 
 use App\Filament\Forms\Components\BelongsToSelect;
+use App\Filament\Resources\Cultivars\Pages\EditCultivar;
+use App\Filament\Resources\Genera\Pages\EditGenus;
 use App\Filament\Resources\Plants\Pages\CreatePlant;
 use App\Filament\Resources\Plants\Pages\EditPlant;
 use App\Filament\Resources\Species\SpeciesResource;
+use App\Models\Cultivar;
 use App\Models\Family;
 use App\Models\Genus;
 use App\Models\Language;
@@ -17,6 +20,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
@@ -41,9 +45,10 @@ it('infers a relationship from the field name and keeps localized and parent sea
 
     expect($field->getRelationshipName())->toBe('species')
         ->and($field->getSearchResults('Japanese cherry'))->toHaveKeys([$species->id])
-        ->and($field->getSearchResults('Cherry genus'))->toHaveKeys([$species->id, $excluded->id]);
+        ->and($field->getSearchResults('Cherry genus'))->toHaveKeys([$species->id, $excluded->id])
+        ->and($field->getSearchResults(''))->toHaveKeys([$species->id, $excluded->id]);
 
-    $field->relationship(modifyQueryUsing: fn (Builder $query): Builder => $query->whereKeyNot($excluded->id))
+    $field->relationship(modifyQueryUsing: fn (Builder $query): Builder => $query->where('_localizables.value', 'Japanese cherry'))
         ->preload()
         ->state($species->id);
 
@@ -182,4 +187,51 @@ it('loads, changes and clears the inferred foreign key on the edit page', functi
         ->assertHasNoFormErrors();
 
     expect($plant->fresh()->species_id)->toBeNull();
+});
+
+it('searches a top-level select without loading the rest of the edit form', function (string $pageClass, string $recordClass, string $relatedClass, string $relationship): void {
+    $related = $relatedClass::factory()->create(['name' => 'searchable']);
+    $record = $recordClass::factory()->for($related, $relationship)->create();
+    if ($record instanceof Plant) {
+        $record->baseCultivar()->create();
+    }
+    $page = livewire($pageClass, ['record' => $record->id]);
+
+    DB::enableQueryLog();
+    try {
+        $page->call('callSchemaComponentMethod', "form.{$relationship}_id", 'getSearchResultsForJs', ['search' => 'searchable']);
+        $queries = collect(DB::getQueryLog())->pluck('query')->map(fn (string $query) => str_replace(['`', '"'], '', $query));
+    } finally {
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+    }
+
+    expect(array_column($page->effects['returns'][0], 'value'))->toBe([(string) $related->id])
+        ->and($page->effects)->not->toHaveKey('html')
+        ->and($page->effects['partials'] ?? [])->toBeEmpty()
+        ->and($queries->filter(fn (string $query) => str_contains($query, " from {$related->getTable()} "))->count())->toBe(1)
+        ->and($queries->contains(fn (string $query) => str_contains($query, ' from plant_properties ')))->toBeFalse();
+})->with([
+    'plant species' => [EditPlant::class, Plant::class, Species::class, 'species'],
+    'genus family' => [EditGenus::class, Genus::class, Family::class, 'family'],
+    'cultivar plant' => [EditCultivar::class, Cultivar::class, Plant::class, 'plant'],
+]);
+
+it('loads the current species label without the localization search joins', function (): void {
+    $genus = Genus::factory()->create(['name' => 'Prunus']);
+    $species = Species::factory()->create(['genus_id' => $genus->id, 'name' => 'serrulata']);
+    $page = livewire(CreatePlant::class);
+    $field = $page->instance()->form->getComponent('species_id')->state($species->id);
+
+    DB::enableQueryLog();
+    try {
+        $label = $field->getOptionLabel();
+        $queries = collect(DB::getQueryLog())->pluck('query');
+    } finally {
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+    }
+
+    expect($label)->toContain('serrulata', 'Prunus')
+        ->and($queries->contains(fn (string $query) => str_contains($query, ' join ')))->toBeFalse();
 });

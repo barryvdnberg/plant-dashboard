@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\NameDisplay;
+use App\Filament\Resources\Cultivars\CultivarResource;
 use App\Filament\Resources\Cultivars\Pages\CreateCultivar;
 use App\Filament\Resources\Cultivars\Pages\EditCultivar;
 use App\Filament\Resources\Plants\Pages\CreatePlant;
@@ -7,7 +9,9 @@ use App\Models\Cultivar;
 use App\Models\Language;
 use App\Models\Plant;
 use App\Models\User;
+use App\Support\NameDisplayPreferences;
 use Filament\Facades\Filament;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
@@ -18,6 +22,26 @@ beforeEach(function (): void {
     app()->setLocale('en');
     Filament::setCurrentPanel('admin');
     Filament::bootCurrentPanel();
+});
+
+it('reuses the cultivar and parent translations across repeated title reads', function (): void {
+    $plant = Plant::factory()->create(['name' => 'Prunus yedoensis']);
+    $plant->replaceNameTranslations(['en' => 'Yoshino cherry']);
+    $cultivar = Cultivar::factory()->for($plant)->create(['name' => 'Akebono']);
+    app(NameDisplayPreferences::class)->useUser(auth()->user()->forceFill(['name_display_preference' => NameDisplay::Translated]));
+
+    DB::enableQueryLog();
+    try {
+        $titles = array_map(fn () => CultivarResource::getRecordTitle($cultivar), range(1, 3));
+        $translationQueries = collect(DB::getQueryLog())->pluck('query')
+            ->filter(fn (string $query) => str_contains(str_replace(['`', '"'], '', $query), ' from localizables '));
+    } finally {
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+    }
+
+    expect($titles)->toBe(array_fill(0, 3, 'Yoshino cherry Akebono'))
+        ->and($translationQueries)->toHaveCount(2);
 });
 
 it('creates a cultivar with translations through the panel form', function (): void {
