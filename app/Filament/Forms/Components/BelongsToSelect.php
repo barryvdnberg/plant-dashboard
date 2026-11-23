@@ -311,27 +311,21 @@ class BelongsToSelect extends Select
 
     protected function createParentRedirectLink(): void
     {
-        $this->hint(function (Get $get) {
-            $relationshipName = $this->getRelationshipName();
-            $id = $get($this->getName());
-            if (! $id) {
+        $this->hint(static function (BelongsToSelect $component): ?Htmlable {
+            $record = $component->getSelectedRecord();
+            $resource = $record ? Filament::getPanel('admin')->getModelResource($record) : null;
+
+            if ($resource === null || ! $resource::hasPage('edit')) {
                 return null;
             }
 
-            $label = $this->getModelLabel(Str::ucfirst($this->relationshipName));
-
-            $string = __('View '.':name', [
-                'name' => $label,
-            ]);
-
-            $url = route('filament.admin.resources.'.Str::plural($relationshipName).'.edit', [
-                'record' => $id,
-            ]);
+            $label = $component->getModelLabel(Str::headline(class_basename($record)));
+            $url = $resource::getUrl('edit', ['record' => $record], panel: 'admin');
 
             return new HtmlString(
                 Blade::render(
                     '<x-filament::link :href="$url" color="default" target="_blank" size="xs">{{ $label }}</x-filament::link>',
-                    ['url' => $url, 'label' => $string],
+                    ['url' => $url, 'label' => __('View :name', ['name' => $label])],
                 )
             );
         });
