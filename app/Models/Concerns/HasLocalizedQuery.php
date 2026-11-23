@@ -39,8 +39,9 @@ trait HasLocalizedQuery
      *
      * @param  int  $depth  Number of parent generations to join and localise (HasParent models only).
      * @param  string|null  $locale  Locale to filter localizations by. Defaults to the application locale.
+     * @param  bool  $withJoins  Include SQL joins for filtering or selecting localized columns.
      */
-    public function scopeWithLocalizedData(Builder $query, int $depth = 1, ?string $locale = null): Builder
+    public function scopeWithLocalizedData(Builder $query, int $depth = 1, ?string $locale = null, bool $withJoins = true): Builder
     {
         // Keep model accessors locale-safe and avoid per-row translation queries.
         $model = $this;
@@ -54,6 +55,10 @@ trait HasLocalizedQuery
             }
             $path .= 'parent.';
             $model = $model->parent()->getRelated();
+        }
+
+        if (! $withJoins) {
+            return $query;
         }
 
         if ($this instanceof Localization) {

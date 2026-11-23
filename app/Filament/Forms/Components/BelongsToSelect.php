@@ -85,7 +85,8 @@ class BelongsToSelect extends Select
         $this->relationship = $name ?? (str_ends_with($fieldName, '_id') ? Str::beforeLast($fieldName, '_id') : null);
         $this->relationshipTitleAttribute = $titleAttribute;
         $this->modifyRelationshipQueryUsing = static function (BelongsToSelect $component, Builder $query, ?string $search = null) use ($modifyQueryUsing): Builder {
-            $query = $component->modifyQuery($query);
+            // A key lookup only needs the models for the label. Explicit modifiers may filter joined columns.
+            $query = $component->modifyQuery($query, withJoins: $search !== null || $modifyQueryUsing !== null);
 
             return $component->evaluate($modifyQueryUsing, [
                 'query' => $query, 
@@ -132,14 +133,18 @@ class BelongsToSelect extends Select
         return $this->withParent && $this->getRelationship()->getRelated() instanceof ParentRelationship;
     }
 
-    protected function modifyQuery(Builder $query): Builder
+    protected function modifyQuery(Builder $query, bool $withJoins): Builder
     {
         $hasParent = $this->includeParent();
         $model = $query->getModel();
 
         // Fast path: model uses HasLocalizedQuery - one call handles all join detection.
         if (method_exists($model, 'scopeWithLocalizedData')) {
-            $query->withLocalizedData(depth: $hasParent ? 1 : 0);
+            $query->withLocalizedData(depth: $hasParent ? 1 : 0, withJoins: $withJoins);
+
+            if (! $withJoins) {
+                return $query;
+            }
 
             if ($hasParent) {
                 $query->addParentSelect();
@@ -149,7 +154,11 @@ class BelongsToSelect extends Select
         }
 
         if ($hasParent) {
-            $query->withLocalizedParent()->with('parent')->addParentSelect();
+            $query->with('parent');
+
+            if ($withJoins) {
+                $query->withLocalizedParent()->addParentSelect();
+            }
 
             if ($this->relationshipParentHasLocalization()) {
                 $query->with('parent.localizations');
@@ -157,10 +166,11 @@ class BelongsToSelect extends Select
         }
 
         if ($this->relationshipHasLocalization()) {
-            return $query
-                ->withLocalization()
-                ->with('localizations')
-                ->addLocalizationSelect();
+            $query->with('localizations');
+
+            if ($withJoins) {
+                $query->withLocalization()->addLocalizationSelect();
+            }
         }
 
         return $query;
