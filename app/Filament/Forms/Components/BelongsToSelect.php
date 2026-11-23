@@ -3,9 +3,13 @@
 namespace App\Filament\Forms\Components;
 
 use App\Models\Contracts\Localization;
+use App\Models\Contracts\ParentRelationship;
+use Closure;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use LogicException;
 
 class BelongsToSelect extends Select
 {
@@ -25,21 +30,8 @@ class BelongsToSelect extends Select
 
     protected bool $parentSearchable = false;
 
-    // /** @var class-string<\Illuminate\Database\Eloquent\Model>|null $parentModel */
-    // protected ?string $parentModelClass = null;
-    protected string $parentAliasName = '_parent';
-
     protected string $parentTitleAttributeName = 'name';
 
-    protected string $parentTitleSelectAlias = '_parent_name';
-
-    protected ?string $relationshipName = null;
-
-    protected string $relationshipTitleAttributeName = 'name';
-
-    /**
-     * Loads the query with it's parent
-     */
     public function withParent(bool $searchable = true): static
     {
         $this->withParent = true;
@@ -55,61 +47,85 @@ class BelongsToSelect extends Select
         return $this;
     }
 
-    public function usingRelationship(string $relationshipName): static
-    {
-        $this->relationshipName = $relationshipName;
-
-        return $this;
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $name = $this->getName();
-        if (str_ends_with($name, '_id')) {
-            $this->relationshipName = Str::beforeLast($name, '_id');
+        if (str_ends_with($this->getName(), '_id')) {
+            $this->relationship();
         }
 
         $this->configureLabel();
+        $this->nullable()->live()->partiallyRenderAfterStateUpdated();
 
-        $this->nullable();
+        $this->options(static fn (BelongsToSelect $component): ?array => $component->getOptionsFromRelationship());
+        $this->getSearchResultsUsing(static fn (BelongsToSelect $component, ?string $search): array => $component->getSearchResultsFromRelationship($search));
+        $this->loadStateFromRelationshipsUsing(static function (BelongsToSelect $component): void {
+            $component->fillStateFromRelationship();
+        });
+        $this->saveRelationshipsUsing(static function (BelongsToSelect $component): void {
+            $component->saveStateToRelationship();
+        });
 
-        $this->live();
-        $this->partiallyRenderAfterStateUpdated();
-
-        // base setup for relationship
-        $this->configureRelationship();
-
-        // required data for searching
         $this->configureSearchColumnNames();
-
-        // retrieves search results and their labels
-        $this->configureGetSearchResultsUsing();
         $this->configureGetOptionLabelFromRecordUsing();
-
-        // retrieves the current selected record and its label
         $this->configureGetSelectedRecordUsing();
         $this->configureGetOptionLabelUsing();
-
-        // Manage option form (create/edit)
         $this->configureManageOptionForm();
-
-        // Create option form action save logic
         $this->configureCreateOptionUsing();
-
-        // Update option form action load and save logic
         $this->configureFillEditOptionActionFormUsing();
         $this->configureUpdateOptionUsing();
-
-        // Redirect link to parent record edit page
         $this->createParentRedirectLink();
+    }
 
+    public function relationship(string|Closure|null $name = null, string|Closure|null $titleAttribute = null, ?Closure $modifyQueryUsing = null, bool $ignoreRecord = false): static
+    {
+        $fieldName = $this->getName();
+        $this->relationship = $name ?? (str_ends_with($fieldName, '_id') ? Str::beforeLast($fieldName, '_id') : null);
+        $this->relationshipTitleAttribute = $titleAttribute;
+        $this->modifyRelationshipQueryUsing = static function (BelongsToSelect $component, Builder $query, ?string $search = null) use ($modifyQueryUsing): Builder {
+            $query = $component->modifyQuery($query);
+
+            return $component->evaluate($modifyQueryUsing, ['query' => $query, 'search' => $search]) ?? $query;
+        };
+        $this->shouldIgnoreRelationshipRecord = $ignoreRecord;
+        $this->cachedRelationshipRecords = null;
+        $this->cachedRelationshipOptions = null;
+        $this->cachedSelectedRecord = null;
+
+        return $this;
+    }
+
+    public function getRelationship(): BelongsTo
+    {
+        if (! $this->hasRelationship()) {
+            throw new LogicException("BelongsToSelect [{$this->getName()}] requires a relationship. Call relationship() with its name or use a field name ending in _id.");
+        }
+
+        $relationship = parent::getRelationship();
+
+        if (! $relationship instanceof BelongsTo) {
+            throw new LogicException("The relationship [{$this->getRelationshipName()}] on [{$this->getModel()}] must be a BelongsTo relationship.");
+        }
+
+        return $relationship;
+    }
+
+    public function getRelationshipTitleAttribute(): string
+    {
+        return parent::getRelationshipTitleAttribute() ?? 'name';
+    }
+
+    public function toEmbeddedHtml(): string
+    {
+        $this->getRelationship();
+
+        return parent::toEmbeddedHtml();
     }
 
     protected function includeParent(): bool
     {
-        return $this->withParent;
+        return $this->withParent && $this->getRelationship()->getRelated() instanceof ParentRelationship;
     }
 
     protected function modifyQuery(Builder $query): Builder
@@ -128,8 +144,14 @@ class BelongsToSelect extends Select
             return $query->addLocalizationSelect();
         }
 
-        // Fallback for simpler models (e.g. Color) that implement Localization directly
-        // but are not query-root models and therefore don't use HasLocalizedQuery.
+        if ($hasParent) {
+            $query->withLocalizedParent()->with('parent')->addParentSelect();
+
+            if ($this->relationshipParentHasLocalization()) {
+                $query->with('parent.localizations');
+            }
+        }
+
         if ($this->relationshipHasLocalization()) {
             return $query
                 ->withLocalization()
@@ -137,27 +159,14 @@ class BelongsToSelect extends Select
                 ->addLocalizationSelect();
         }
 
-        if ($hasParent) {
-            return $query
-                ->withParent()
-                ->addParentSelect();
-        }
-
         return $query;
-    }
-
-    protected function configureRelationship(): void
-    {
-        // manually setting up relationship instead of relying on the relationship() function
-        $this->relationship = fn () => $this->relationshipName;
-        $this->relationshipTitleAttribute = fn () => $this->relationshipTitleAttributeName;
     }
 
     protected function configureSearchColumnNames(): void
     {
-        $this->searchColumnNames(static function (BelongsToSelect $component) {
+        $this->searchColumnNames(static function (BelongsToSelect $component): array {
             $columns = [
-                $component->getRelationship()->getRelated()->getTable().'.'.$component->getRelationshipTitleAttribute(),
+                $component->getRelationship()->getRelated()->qualifyColumn($component->getRelationshipTitleAttribute()),
             ];
 
             if ($component->relationshipHasLocalization()) {
@@ -177,57 +186,15 @@ class BelongsToSelect extends Select
         });
     }
 
-    protected function configureGetSearchResultsUsing(): void
-    {
-        $this->getSearchResultsUsing(static function (BelongsToSelect $component, ?string $search) {
-            $relationship = $component->getRelationshipNoConstraints();
-
-            $relationshipQuery = $relationship->getQuery();
-
-            $component->modifyQuery($relationshipQuery);
-
-            $relationshipQuery->where(static function (Builder $query) use ($component, $search) {
-                $isFirst = true;
-
-                foreach ($component->getSearchColumns() ?? [] as $searchColumn) {
-                    $whereClause = $isFirst ? 'where' : 'orWhere';
-
-                    $query->{$whereClause}(
-                        $searchColumn,
-                        'like',
-                        "%{$search}%",
-                    );
-
-                    $isFirst = false;
-                }
-
-                return $query;
-            });
-
-            $relationshipQuery->limit($component->getOptionsLimit());
-
-            $qualifiedRelatedKeyName = $relationship->getQualifiedOwnerKeyName();
-
-            return $relationshipQuery
-                ->get()
-                ->mapWithKeys(static fn (Model $record) => [
-                    $record->{Str::afterLast($qualifiedRelatedKeyName, '.')} => $component->getOptionLabelFromRecord($record),
-                ])
-                ->toArray();
-        });
-    }
-
     protected function configureGetOptionLabelFromRecordUsing(): void
     {
-        $this->getOptionLabelFromRecordUsing(static function (BelongsToSelect $component, Model $record) {
-            $hasLocalization = $component->relationshipHasLocalization();
-            $hasParent = $component->includeParent();
-
-            $name = $hasLocalization
+        $this->getOptionLabelFromRecordUsing(static function (BelongsToSelect $component, Model $record): string {
+            $titleAttribute = $component->getRelationshipTitleAttribute();
+            $name = $titleAttribute === 'name' && $record instanceof Localization
                 ? $record->display_name
-                : ($record->name ?? '');
+                : (string) data_get($record, str_replace('->', '.', $titleAttribute));
 
-            if (! $hasParent) {
+            if (! $component->includeParent()) {
                 return $name;
             }
 
@@ -246,7 +213,7 @@ class BelongsToSelect extends Select
 
     protected function configureGetOptionLabelUsing(): void
     {
-        $this->getOptionLabelUsing(static function (BelongsToSelect $component) {
+        $this->getOptionLabelUsing(static function (BelongsToSelect $component): ?string {
             $record = $component->getSelectedRecord();
 
             if (! $record) {
@@ -259,30 +226,29 @@ class BelongsToSelect extends Select
 
     protected function configureGetSelectedRecordUsing(): void
     {
-        $this->getSelectedRecordUsing(static function (BelongsToSelect $component, int $state): ?Model {
-            // should always be an integer as it is a foreign key
-            $relationship = $component->getRelationshipNoConstraints();
+        $this->getSelectedRecordUsing(static function (BelongsToSelect $component, int|string $state): ?Model {
+            $relationship = Relation::noConstraints(fn () => $component->getRelationship());
+            $query = $relationship->getQuery()->where($relationship->getQualifiedOwnerKeyName(), $state);
 
-            $relationshipQuery = $relationship->getQuery();
+            if ($component->shouldIgnoreRelationshipRecord && ($record = $component->getRecord()) instanceof Model) {
+                $query->where($record->getQualifiedKeyName(), '!=', $record->getKey());
+            }
 
-            $relationshipQuery->where($relationship->getQualifiedOwnerKeyName(), $state);
-
-            $component->modifyQuery($relationshipQuery);
-
-            return $relationshipQuery->first();
+            return $component->evaluate($component->modifyRelationshipQueryUsing, ['query' => $query, 'search' => null])->first();
         });
     }
 
     protected function configureCreateOptionUsing(): void
     {
-        $this->createOptionUsing(static function (BelongsToSelect $component, array $data, Schema $schema) {
-            $record = $component->getRelationship()->getRelated();
+        $this->createOptionUsing(static function (BelongsToSelect $component, array $data, Schema $schema): int|string {
+            $relationship = $component->getRelationship();
+            $record = $relationship->newModelInstance();
             $record->fill($data);
             $record->save();
 
             $schema->model($record)->saveRelationships();
 
-            return $record->getKey();
+            return $record->getAttribute($relationship->getOwnerKeyName());
         });
     }
 
@@ -298,15 +264,6 @@ class BelongsToSelect extends Select
         $this->updateOptionUsing(static function (array $data, Schema $schema): void {
             $schema->getRecord()?->update($data);
         });
-    }
-
-    /**
-     * Return the underlying BelongsTo relationship
-     */
-    protected function getRelationshipNoConstraints(): BelongsTo
-    {
-        /** @var BelongsTo $relationship */
-        return Relation::noConstraints(fn () => $this->getRelationship());
     }
 
     protected function createParentRedirectLink(): void
