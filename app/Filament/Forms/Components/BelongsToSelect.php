@@ -4,7 +4,7 @@ namespace App\Filament\Forms\Components;
 
 use App\Models\Contracts\Localization;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Utilities\Get;
+use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -313,6 +313,8 @@ class BelongsToSelect extends Select
     {
         $this->hint(static function (BelongsToSelect $component): ?Htmlable {
             $record = $component->getSelectedRecord();
+
+            /** @var class-string<Resource>|null $resource */
             $resource = $record ? Filament::getPanel('admin')->getModelResource($record) : null;
 
             if ($resource === null || ! $resource::hasPage('edit')) {
