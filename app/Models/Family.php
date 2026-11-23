@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Concerns\HasLocalization;
 use App\Models\Concerns\HasModelLabel;
-// use App\Models\Concerns\HasLocalizedQuery;
 use App\Models\Concerns\HasScientificName;
 use App\Models\Contracts\Localization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,6 @@ class Family extends Model implements Localization
 {
     use HasFactory;
     use HasLocalization;
-    // use HasLocalizedQuery;
     use HasModelLabel;
 
     use HasScientificName;

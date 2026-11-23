@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\NameDisplay;
 use App\Enums\NameDisplayGroup;
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;

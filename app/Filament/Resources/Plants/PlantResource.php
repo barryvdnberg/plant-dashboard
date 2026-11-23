@@ -8,7 +8,6 @@ use App\Filament\Resources\Plants\Pages\CreatePlant;
 use App\Filament\Resources\Plants\Pages\EditPlant;
 use App\Filament\Resources\Plants\Pages\ListPlants;
 use App\Filament\Resources\Plants\RelationManagers\CultivarsRelationManager;
-// use App\Filament\Resources\Plants\Schemas\PlantForm;
 use App\Filament\Resources\Plants\Schemas\PlantInfolist;
 use App\Filament\Resources\Plants\Tables\PlantsTable;
 use App\Models\Plant;
