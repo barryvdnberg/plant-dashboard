@@ -60,6 +60,7 @@ class BelongsToSelect extends Select
 
         $this->options(static fn (BelongsToSelect $component): ?array => $component->getOptionsFromRelationship());
         $this->getSearchResultsUsing(static fn (BelongsToSelect $component, ?string $search): array => $component->getSearchResultsFromRelationship($search));
+
         $this->loadStateFromRelationshipsUsing(static function (BelongsToSelect $component): void {
             $component->fillStateFromRelationship();
         });
@@ -86,7 +87,10 @@ class BelongsToSelect extends Select
         $this->modifyRelationshipQueryUsing = static function (BelongsToSelect $component, Builder $query, ?string $search = null) use ($modifyQueryUsing): Builder {
             $query = $component->modifyQuery($query);
 
-            return $component->evaluate($modifyQueryUsing, ['query' => $query, 'search' => $search]) ?? $query;
+            return $component->evaluate($modifyQueryUsing, [
+                'query' => $query, 
+                'search' => $search
+            ]) ?? $query;
         };
         $this->shouldIgnoreRelationshipRecord = $ignoreRecord;
         $this->cachedRelationshipRecords = null;
@@ -234,7 +238,15 @@ class BelongsToSelect extends Select
                 $query->where($record->getQualifiedKeyName(), '!=', $record->getKey());
             }
 
-            return $component->evaluate($component->modifyRelationshipQueryUsing, ['query' => $query, 'search' => null])->first();
+            $query = $component->evaluate($component->modifyRelationshipQueryUsing, [
+                'query' => $query, 'search' => null
+            ]);
+
+            if (! $query instanceof Builder) {
+                return null;
+            }
+
+            return $query->first();
         });
     }
 
