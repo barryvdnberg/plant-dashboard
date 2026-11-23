@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Plants\Pages;
 
+use App\Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\Plants\PlantResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
-use Filament\Resources\Pages\EditRecord;
 
 class EditPlant extends EditRecord
 {
@@ -18,5 +18,4 @@ class EditPlant extends EditRecord
             DeleteAction::make(),
         ];
     }
-
 }
