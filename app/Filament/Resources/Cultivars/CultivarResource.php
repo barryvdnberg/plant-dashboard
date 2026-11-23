@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cultivars;
 
+use App\Enums\NameDisplay;
 use App\Filament\Forms\Builder\CultivarForm;
 use App\Filament\Resources\Cultivars\Pages\CreateCultivar;
 use App\Filament\Resources\Cultivars\Pages\EditCultivar;
@@ -9,13 +10,14 @@ use App\Filament\Resources\Cultivars\Pages\ListCultivars;
 use App\Filament\Resources\Cultivars\Schemas\CultivarInfolist;
 use App\Filament\Resources\Cultivars\Tables\CultivarsTable;
 use App\Models\Cultivar;
+use App\Support\NameDisplayPreferences;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Model;
 
 class CultivarResource extends Resource
 {
@@ -27,10 +29,15 @@ class CultivarResource extends Resource
 
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {
-        if ($record) {
-            return $record->display_name;
+        if ($record instanceof Cultivar && app(NameDisplayPreferences::class)->forModel($record) !== NameDisplay::Scientific) {
+            $record->loadMissing('localizations');
+
+            if ($record->getTranslation() === null) {
+                $record->loadMissing('parent.localizations');
+            }
         }
-        return null;
+
+        return $record?->display_name;
     }
 
     public static function getModelLabel(): string
