@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Plant;
+use App\Models\Species;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Plant>
+ * @extends Factory<Plant>
  */
 class PlantFactory extends Factory
 {
@@ -17,7 +19,10 @@ class PlantFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word . ' '. $this->faker->word,
+            'species_id' => Species::factory(),
+            'name' => fn (array $attributes): string => $attributes['species_id'] === null
+                ? ucfirst($this->faker->word()).' '.$this->faker->word()
+                : Species::on($this->connection)->with('genus')->findOrFail($attributes['species_id'])->scientific_name,
             'image_paths' => [],
         ];
     }
