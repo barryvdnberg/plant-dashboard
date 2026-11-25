@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\GrowthPattern;
-use App\Enums\PlantTrait;
 use App\Enums\PlantType;
 use App\Models\Cultivar;
 use App\Models\PlantProperties;
@@ -11,7 +9,7 @@ use App\Models\PlantPropertiesGrowthStyle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PlantProperties>
+ * @extends Factory<PlantProperties>
  */
 class PlantPropertiesFactory extends Factory
 {
@@ -23,20 +21,16 @@ class PlantPropertiesFactory extends Factory
     public function definition(): array
     {
         return [
-            'plant_type' => $this->faker->randomElement([
-                null, 
-                $this->faker->randomElement(PlantType::cases())
-            ]),
+            'cultivar_id' => Cultivar::factory(),
+            'plant_type' => $this->faker->randomElement(PlantType::cases())->value,
         ];
     }
 
     public function configure(): static
     {
-        return $this->afterCreating(function (PlantProperties $properties) {
-            if ($this->faker->boolean()) {
-                PlantPropertiesGrowthStyle::factory()
-                    ->for($properties)
-                    ->create(); 
+        return $this->afterCreating(function (PlantProperties $properties): void {
+            if ($this->faker->boolean() && $properties->growthStyles()->doesntExist()) {
+                PlantPropertiesGrowthStyle::factory()->for($properties)->create();
             }
         });
     }
