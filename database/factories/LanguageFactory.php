@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Language;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Language>
+ * @extends Factory<Language>
  */
 class LanguageFactory extends Factory
 {
@@ -17,9 +18,9 @@ class LanguageFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => $this->faker->languageCode,
-            'name' => $this->faker->word,
-            'english_name' => $this->faker->word
+            'code' => $this->faker->unique()->languageCode(),
+            'name' => $this->faker->word(),
+            'english_name' => $this->faker->word(),
         ];
     }
 }
