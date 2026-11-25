@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\LeafRetention;
 use App\Models\Cultivar;
+use App\Models\Foliage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Foliage>
+ * @extends Factory<Foliage>
  */
 class FoliageFactory extends Factory
 {
@@ -18,13 +19,10 @@ class FoliageFactory extends Factory
      */
     public function definition(): array
     {
-        $cultivarId = Cultivar::query()->inRandomOrder()->value('id')
-            ?? Cultivar::factory()->create()->id;
-
         return [
-            'cultivar_id' => $cultivarId,
-            'retention' => $this->faker->randomElement([null, $this->faker->randomElement(LeafRetention::cases())]),
-            'seasonal_color_change' => $this->faker->randomElement([0, 0, 1])
+            'cultivar_id' => Cultivar::factory(),
+            'retention' => $this->faker->optional()->randomElement(LeafRetention::cases())?->value,
+            'seasonal_color_change' => $this->faker->boolean(25),
         ];
     }
 }
