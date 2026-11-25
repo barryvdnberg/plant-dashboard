@@ -24,4 +24,21 @@ class CultivarFactory extends Factory
             'image_paths' => [],
         ];
     }
+
+    public function base(): static
+    {
+        return $this->state(['name' => null, 'is_default' => true]);
+    }
+
+    public function withDetails(): static
+    {
+        return $this
+            ->has(PlantPropertiesFactory::new()
+                ->has(PlantPropertiesGrowthStyleFactory::new(), 'growthStyles')
+                ->has(PlantPropertiesTraitFactory::new(), 'traits'), 'properties')
+            ->has(FoliageFactory::new(), 'foliage')
+            ->has(PlantEnvironmentFactory::new(), 'environment')
+            ->has(PlantMaintenanceFactory::new(), 'maintenance')
+            ->has(PlantBloomingFactory::new(), 'blooming');
+    }
 }
