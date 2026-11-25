@@ -7,10 +7,11 @@ use App\Enums\HardinessZone;
 use App\Enums\Moisture;
 use App\Enums\SunExposure;
 use App\Models\Cultivar;
+use App\Models\PlantEnvironment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PlantEnvironment>
+ * @extends Factory<PlantEnvironment>
  */
 class PlantEnvironmentFactory extends Factory
 {
@@ -21,20 +22,25 @@ class PlantEnvironmentFactory extends Factory
      */
     public function definition(): array
     {
-        $cultivarId = Cultivar::query()->inRandomOrder()->value('id')
-            ?? Cultivar::factory()->create()->id;
+        $minimumPh = $this->faker->numberBetween(4, 7);
 
-        $ph_min = $this->faker->numberBetween(1, 9);
-        $ph_max = $ph_min + $this->faker->numberBetween(0, 4);
-        
-        $exposures = collect(SunExposure::cases())->random(number: rand(min: 0, max: 2))->all();
         return [
-            'cultivar_id' => $cultivarId,
-            'winter_hardiness' => $this->faker->randomElement([null, null, $this->faker->randomElement(HardinessZone::cases())]),
-            // 'sun_exposure' => $exposures,
-            'ph_range' => [$ph_min, $ph_max],
-            'ground_nutrition_minimum' => $this->faker->randomElement([null, null, $this->faker->randomElement(GroundNutrition::cases())]),
-            'soil_moisture' => $this->faker->randomElement([null, null, $this->faker->randomElement(Moisture::cases())])
+            'cultivar_id' => Cultivar::factory(),
+            'winter_hardiness' => $this->faker->randomElement(HardinessZone::cases()),
+            'ph_range' => [$minimumPh, $minimumPh + $this->faker->numberBetween(1, 2)],
+            'ground_nutrition_minimum' => $this->faker->optional()->randomElement(GroundNutrition::cases()),
+            'soil_moisture' => $this->faker->optional()->randomElement(Moisture::cases()),
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (PlantEnvironment $environment): void {
+            $exposures = $this->faker->randomElements(SunExposure::cases(), $this->faker->numberBetween(1, 2));
+
+            $environment->sunExposures()->createMany(
+                array_map(fn (SunExposure $exposure): array => ['value' => $exposure->value], $exposures),
+            );
+        });
     }
 }
