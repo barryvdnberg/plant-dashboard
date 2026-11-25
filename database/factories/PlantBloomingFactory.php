@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\Month;
 use App\Models\Cultivar;
+use App\Models\PlantBlooming;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PlantBlooming>
+ * @extends Factory<PlantBlooming>
  */
 class PlantBloomingFactory extends Factory
 {
@@ -18,13 +19,17 @@ class PlantBloomingFactory extends Factory
      */
     public function definition(): array
     {
-        $cultivarId = Cultivar::query()->inRandomOrder()->value('id')
-            ?? Cultivar::factory()->create()->id;
+        return ['cultivar_id' => Cultivar::factory()];
+    }
 
-        $months = collect(Month::cases())->random(number: rand(min: 0, max: 3))->all();
-        return [
-            'cultivar_id' => $cultivarId,
-            // 'months' => $months
-        ];
+    public function configure(): static
+    {
+        return $this->afterCreating(function (PlantBlooming $blooming): void {
+            $months = $this->faker->randomElements(Month::cases(), $this->faker->numberBetween(1, 3));
+
+            $blooming->months()->createMany(
+                array_map(fn (Month $month): array => ['index' => $month->value], $months),
+            );
+        });
     }
 }
