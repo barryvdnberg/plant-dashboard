@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\SoilType;
-use App\Traits\HasTranslations;
+use Database\Seeders\Concerns\SeedsNameTranslations;
 use Illuminate\Database\Seeder;
 
 class SoilTypeSeeder extends Seeder
 {
-    use HasTranslations;
+    use SeedsNameTranslations;
 
     /**
      * Run the database seeds.
@@ -93,7 +93,7 @@ class SoilTypeSeeder extends Seeder
                 'name' => $info['name'],
             ]);
 
-            $this->applyTranslations($soil, $translations);
+            $this->seedNameTranslations($soil, $translations[$info['name']]);
         }
     }
 }

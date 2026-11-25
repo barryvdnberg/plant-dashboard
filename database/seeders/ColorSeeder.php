@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\Color;
-use App\Traits\HasTranslations;
+use Database\Seeders\Concerns\SeedsNameTranslations;
 use Illuminate\Database\Seeder;
 
 class ColorSeeder extends Seeder
 {
-    use HasTranslations;
+    use SeedsNameTranslations;
 
     /**
      * Run the database seeds.
@@ -182,7 +182,7 @@ class ColorSeeder extends Seeder
                 'hex_value' => $info['hex_value'],
             ]);
 
-            $this->applyTranslations($color, $translations);
+            $this->seedNameTranslations($color, $translations[$info['name']]);
         }
     }
 }

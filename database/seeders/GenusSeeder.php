@@ -4,12 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\Family;
 use App\Models\Genus;
+use Database\Seeders\Concerns\SeedsNameTranslations;
 use Illuminate\Database\Seeder;
-use App\Traits\HasTranslations;
 
 class GenusSeeder extends Seeder
 {
-    use HasTranslations;
+    use SeedsNameTranslations;
 
     public function run(): void
     {
@@ -76,19 +76,12 @@ class GenusSeeder extends Seeder
             ],
         ];
 
-        $familyMapping = [
-            'Rosaceae' => ['Rosa', 'Fragaria'],
-            'Asteraceae' => ['Taraxacum', 'Bellis'],
-            'Lamiaceae' => ['Mentha', 'Salvia'],
-        ];
+        foreach (StarterPlantCatalog::TAXONOMY as $familyName => $entries) {
+            $family = Family::whereName($familyName)->firstOrFail();
 
-        foreach ($familyMapping as $familyName => $genusNames) {
-
-            $family = Family::where('name', $familyName)->first();
-
-            foreach ($genusNames as $genusName) {
-                $genus = $family->genera()->create(['name' => $genusName]);
-                $this->applyTranslations($genus, $genera);
+            foreach (array_keys($entries) as $genusName) {
+                $genus = $family->genera()->firstOrCreate(['name' => $genusName]);
+                $this->seedNameTranslations($genus, $genera[$genusName]);
             }
         }
     }

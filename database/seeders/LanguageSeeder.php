@@ -3,10 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\Language;
+use Database\Seeders\Concerns\SeedsNameTranslations;
 use Illuminate\Database\Seeder;
 
 class LanguageSeeder extends Seeder
 {
+    use SeedsNameTranslations;
+
     /**
      * Run the database seeds.
      */
@@ -147,7 +150,7 @@ class LanguageSeeder extends Seeder
 
         foreach (Language::all() as $language) {
             if (isset($translations[$language->code])) {
-                $language->replaceNameTranslations($translations[$language->code]);
+                $this->seedNameTranslations($language, $translations[$language->code]);
             }
         }
     }

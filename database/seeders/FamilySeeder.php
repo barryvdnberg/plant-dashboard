@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\Family;
+use Database\Seeders\Concerns\SeedsNameTranslations;
 use Illuminate\Database\Seeder;
-use App\Traits\HasTranslations;
 
 class FamilySeeder extends Seeder
 {
-    use HasTranslations;
+    use SeedsNameTranslations;
 
     public function run(): void
     {
@@ -46,8 +46,8 @@ class FamilySeeder extends Seeder
         ];
 
         foreach ($families as $name => $translations) {
-            $family = Family::create(['name' => $name]);
-            $this->applyTranslations($family, $families);
+            $family = Family::firstOrCreate(['name' => $name]);
+            $this->seedNameTranslations($family, $translations);
         }
     }
 }

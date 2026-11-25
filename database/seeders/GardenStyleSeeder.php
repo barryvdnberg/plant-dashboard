@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\GardenStyle;
-use App\Traits\HasTranslations;
+use Database\Seeders\Concerns\SeedsNameTranslations;
 use Illuminate\Database\Seeder;
 
 class GardenStyleSeeder extends Seeder
 {
-    use HasTranslations;
+    use SeedsNameTranslations;
 
     /**
      * Run the database seeds.
@@ -135,7 +135,7 @@ class GardenStyleSeeder extends Seeder
         foreach ($data as $info) {
             $style = GardenStyle::updateOrCreate(['name' => $info['name']]);
 
-            $this->applyTranslations($style, $translations);
+            $this->seedNameTranslations($style, $translations[$info['name']] ?? []);
         }
     }
 }
