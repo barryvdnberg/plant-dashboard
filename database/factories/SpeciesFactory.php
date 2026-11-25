@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Genus;
+use App\Models\Species;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Species>
+ * @extends Factory<Species>
  */
 class SpeciesFactory extends Factory
 {
@@ -17,7 +19,8 @@ class SpeciesFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word,
+            'genus_id' => Genus::factory(),
+            'name' => $this->faker->word(),
             'image_paths' => [],
         ];
     }
