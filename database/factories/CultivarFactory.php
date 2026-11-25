@@ -2,19 +2,15 @@
 
 namespace Database\Factories;
 
+use App\Models\Cultivar;
+use App\Models\Plant;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\PlantProperties;
+
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Cultivar>
+ * @extends Factory<Cultivar>
  */
 class CultivarFactory extends Factory
 {
-    // public function hasProperties()
-    // {
-    //     return $this->has(
-    //         PlantProperties::factory(),
-    //     );
-    // }
     /**
      * Define the model's default state.
      *
@@ -23,7 +19,8 @@ class CultivarFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->colorName,
+            'plant_id' => Plant::factory(),
+            'name' => ucfirst($this->faker->words(2, true)),
             'image_paths' => [],
         ];
     }
