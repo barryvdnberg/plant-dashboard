@@ -28,6 +28,14 @@ docker compose --env-file .env.docker up -d
 
 ```
 
-If starting with a fresh database. Check the reference seeders in the [README](../README.md#local-development). Run them with `docker compose --env-file .env.docker exec app` before each Artisan command. Set up a persistent queue worker to handle catalog imports and exports. Inside the app container, run `php artisan queue:work`.
+After migrating and starting the app, choose a [seeding option](../README.md#seed-the-database). To load the starter catalog and reference data, run this command.
+
+```sh
+docker compose --env-file .env.docker exec app php artisan db:seed --force
+```
+
+For reference data only, run the four commands in the README in order. Prefix each command with `docker compose --env-file .env.docker exec app` and append `--force`.
+
+Set up a persistent queue worker to handle catalog imports and exports. Inside the app container, run `php artisan queue:work`.
 
 PHP and Nginx share the `public-files` volume. Docker fills it from the app image on the first run. When you redeploy, refresh those files from the new image so Nginx serves the latest Vite manifest and bundles. MySQL data and Laravel storage stay in separate persistent host mounts.

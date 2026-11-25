@@ -25,18 +25,30 @@ Copy-Item .env.example .env
 New-Item -ItemType File database/database.sqlite
 ```
 
-Install dependencies, generate a local application key, and migrate the database.
+Install dependencies and generate a local application key.
 
 ```sh
 composer install
 php artisan key:generate
-php artisan migrate
 npm ci
 ```
 
-To start with the bundled plant catalog, run `php artisan db:seed` after migrating. On a fresh database, `php artisan migrate --seed` runs both steps. The seeder loads reference data and a fixed [starter catalog](database/seeders/StarterPlantCatalog.php) of three families, six genera, twelve species and plants, and six named cultivars. Each plant also gets an unnamed base record. Species and plant common names are seeded in Dutch and English. Seeded environment records use the app's default pH range of 6–8. Rerunning the seeder reuses the same records and fills missing seed data.
+### Seed the database
 
-To start with reference data and an empty plant catalog, run the individual seeders below. Run the language seeder first so the others can add translated names.
+| Starting point | What to run | What you get |
+| --- | --- | --- |
+| Fresh database, schema only | `php artisan migrate` | Empty catalog and reference tables. |
+| Fresh database, starter catalog | `php artisan migrate --seed` | Reference data and the bundled plant catalog. |
+| Reference data only | Run `php artisan migrate` if needed, then the four reference seeders below | Languages, colors, garden styles, and soil types. You can then build your own plant catalog. |
+| Migrated database, including one with reference data or some starter entries | `php artisan db:seed` | The full seed. Existing entries that match the bundled records are reused. |
+
+The full seed loads reference data first, then a fixed [starter catalog](database/seeders/StarterPlantCatalog.php) with three families, six genera, twelve species, one plant per species, and six named cultivars. Each plant also gets an unnamed base cultivar. Species and plant common names are seeded in Dutch and English.
+
+Base and named cultivars get a plant type. The other details vary by profile. For example, ‘Robella’ has a plant type, while ‘Alba’ also has foliage, environment, and blooming details. Seeded environment records use the app's default pH range of 6–8.
+
+Rerunning the full seed adds missing records, translations, and links. It matches languages by code and catalog entries by name under their parent where applicable. Existing translations and detail fields take precedence over seed defaults, including blank fields on existing detail records. If you rename a starter entry, a later seed can create a new entry under the bundled name.
+
+For reference data only, run the language seeder first so the other three can add translated names.
 
 ```sh
 php artisan db:seed --class=LanguageSeeder
@@ -45,7 +57,7 @@ php artisan db:seed --class=GardenStyleSeeder
 php artisan db:seed --class=SoilTypeSeeder
 ```
 
-Use Faker factories when you need synthetic data for tests or local development. For example, this creates a cultivar, its taxonomy, and its related plant details.
+For synthetic data in tests or local development, call Faker factories explicitly. With development dependencies installed, run this in `php artisan tinker` to create a cultivar, its taxonomy, and its related plant details.
 
 ```php
 App\Models\Cultivar::factory()->withDetails()->create();
