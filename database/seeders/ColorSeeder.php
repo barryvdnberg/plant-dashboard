@@ -177,10 +177,7 @@ class ColorSeeder extends Seeder
         ];
 
         foreach ($data as $info) {
-            $color = Color::create([
-                'name' => $info['name'],
-                'hex_value' => $info['hex_value'],
-            ]);
+            $color = Color::firstOrCreate(['name' => $info['name']], ['hex_value' => $info['hex_value']]);
 
             $this->seedNameTranslations($color, $translations[$info['name']]);
         }

@@ -89,9 +89,7 @@ class SoilTypeSeeder extends Seeder
         ];
 
         foreach ($data as $info) {
-            $soil = SoilType::create([
-                'name' => $info['name'],
-            ]);
+            $soil = SoilType::firstOrCreate(['name' => $info['name']]);
 
             $this->seedNameTranslations($soil, $translations[$info['name']]);
         }

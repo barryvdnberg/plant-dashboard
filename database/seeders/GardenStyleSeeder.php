@@ -133,7 +133,7 @@ class GardenStyleSeeder extends Seeder
         ];
 
         foreach ($data as $info) {
-            $style = GardenStyle::updateOrCreate(['name' => $info['name']]);
+            $style = GardenStyle::firstOrCreate(['name' => $info['name']]);
 
             $this->seedNameTranslations($style, $translations[$info['name']] ?? []);
         }
