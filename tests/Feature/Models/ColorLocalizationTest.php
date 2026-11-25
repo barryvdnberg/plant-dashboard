@@ -3,7 +3,6 @@
 use App\Models\Color;
 use App\Models\Language;
 use App\Models\Localizable;
-use App\Traits\HasTranslations;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -136,7 +135,7 @@ it('does not let callers mutate the cached label map', function (): void {
     expect(Color::localizedMap($english->id)->get($color->id))->toBe('Red');
 });
 
-it('invalidates deleted translations when seed translations are replaced', function (): void {
+it('invalidates cached labels when name translations are replaced', function (): void {
     createRequiredLanguages();
     $english = Language::whereCode('en')->firstOrFail();
     $dutch = Language::whereCode('nl')->firstOrFail();
@@ -144,11 +143,7 @@ it('invalidates deleted translations when seed translations are replaced', funct
     $color->localizations()->create(['language_id' => $dutch->id, 'value' => 'Rood']);
     expect(Color::localizedMap($dutch->id)->get($color->id))->toBe('Rood');
 
-    $seeder = new class
-    {
-        use HasTranslations;
-    };
-    $seeder->applyTranslations($color, ['Red' => ['en' => 'Crimson']]);
+    $color->replaceNameTranslations(['en' => 'Crimson']);
 
     expect(Color::localizedMap($dutch->id)->get($color->id))->toBe('Red')
         ->and(Color::localizedMap($english->id)->get($color->id))->toBe('Crimson');

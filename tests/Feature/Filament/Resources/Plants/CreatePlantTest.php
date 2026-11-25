@@ -55,7 +55,7 @@ it('requires a plant name', function (): void {
 
 it('generates the plant name from the selected species', function (): void {
     createRequiredLanguages();
-    $species = Species::factory()->create(['name' => 'Officinalis']);
+    $species = Species::factory()->create(['genus_id' => null, 'name' => 'officinalis']);
 
     livewire(CreatePlant::class)
         ->fillForm(['species_id' => $species->getKey()])
