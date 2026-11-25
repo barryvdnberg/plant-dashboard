@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Family;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Family>
+ * @extends Factory<Family>
  */
 class FamilyFactory extends Factory
 {
@@ -17,7 +18,7 @@ class FamilyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word,
+            'name' => ucfirst($this->faker->word()).'aceae',
             'image_paths' => [],
         ];
     }
