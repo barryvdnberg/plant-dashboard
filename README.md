@@ -34,7 +34,9 @@ php artisan migrate
 npm ci
 ```
 
-To start with reference data and an empty plant catalog, run these seeders once on the new database. The language seeder must run first because the other seeders add translations.
+To start with the bundled plant catalog, run `php artisan db:seed` after migrating. On a fresh database, `php artisan migrate --seed` runs both steps. The seeder loads reference data and a fixed [starter catalog](database/seeders/StarterPlantCatalog.php) of three families, six genera, twelve species and plants, and six named cultivars. Each plant also gets an unnamed base record. Species and plant common names are seeded in Dutch and English. Seeded environment records use the app's default pH range of 6–8. Rerunning the seeder reuses the same records and fills missing seed data.
+
+To start with reference data and an empty plant catalog, run the individual seeders below. Run the language seeder first so the others can add translated names.
 
 ```sh
 php artisan db:seed --class=LanguageSeeder
@@ -43,7 +45,11 @@ php artisan db:seed --class=GardenStyleSeeder
 php artisan db:seed --class=SoilTypeSeeder
 ```
 
-For a disposable database with the bundled sample catalog, run `php artisan db:seed` once after migrating, in place of the four individual seed commands. The full seeder also creates plant families, genera, species, and plants.
+Use Faker factories when you need synthetic data for tests or local development. For example, this creates a cultivar, its taxonomy, and its related plant details.
+
+```php
+App\Models\Cultivar::factory()->withDetails()->create();
+```
 
 ### Create a local account
 
