@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Family;
-use App\Models\Genus;
 use Database\Seeders\Concerns\SeedsNameTranslations;
 use Illuminate\Database\Seeder;
 

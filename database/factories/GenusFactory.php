@@ -2,12 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\Family;
-use App\Models\Genus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Genus>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Genus>
  */
 class GenusFactory extends Factory
 {
@@ -19,9 +17,8 @@ class GenusFactory extends Factory
     public function definition(): array
     {
         return [
-            'family_id' => Family::factory(),
-            'name' => ucfirst($this->faker->word()),
-            'image_paths' => [],
+            'name' => $this->faker->word,
+            'image_paths' => []
         ];
     }
 }
