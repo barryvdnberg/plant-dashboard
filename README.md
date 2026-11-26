@@ -40,13 +40,14 @@ npm ci
 | Fresh database, schema only | `php artisan migrate` | Empty catalog and reference tables. |
 | Fresh database, starter catalog | `php artisan migrate --seed` | Reference data and the bundled plant catalog. |
 | Reference data only | Run `php artisan migrate` if needed, then the four reference seeders below | Languages, colors, garden styles, and soil types. You can then build your own plant catalog. |
+| Reference data already loaded, starter catalog only | `php artisan db:seed --class=StarterPlantCatalogSeeder` | Families through cultivars, using the existing languages, colors, and soil types. |
 | Migrated database, including one with reference data or some starter entries | `php artisan db:seed` | The full seed. Existing entries that match the bundled records are reused. |
 
 The full seed loads reference data first, then a fixed [starter catalog](database/seeders/StarterPlantCatalog.php) with three families, six genera, twelve species, one plant per species, and six named cultivars. Each plant also gets an unnamed base cultivar. Species and plant common names are seeded in Dutch and English.
 
 Base and named cultivars get a plant type. The other details vary by profile. For example, ‘Robella’ has a plant type, while ‘Alba’ also has foliage, environment, and blooming details. Seeded environment records use the app's default pH range of 6–8.
 
-Rerunning the full seed adds missing records, translations, and links. It matches languages by code and catalog entries by name under their parent where applicable. Existing translations and detail fields take precedence over seed defaults, including blank fields on existing detail records. If you rename a starter entry, a later seed can create a new entry under the bundled name.
+Rerunning either catalog seed adds missing records, translations, and links. The full seed matches languages by code. Both match catalog entries by name under their parent where applicable. Existing translations and detail fields take precedence over seed defaults, including blank fields on existing detail records. If you rename a starter entry, a later seed can create a new entry under the bundled name.
 
 For reference data only, run the language seeder first so the other three can add translated names.
 

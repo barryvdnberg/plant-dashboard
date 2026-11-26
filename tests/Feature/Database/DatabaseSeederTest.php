@@ -2,14 +2,18 @@
 
 use App\Enums\HardinessZone;
 use App\Filament\Resources\Cultivars\Pages\EditCultivar;
+use App\Models\Color;
 use App\Models\Cultivar;
 use App\Models\Family;
+use App\Models\GardenStyle;
 use App\Models\Genus;
 use App\Models\Language;
 use App\Models\Localizable;
 use App\Models\Plant;
+use App\Models\SoilType;
 use App\Models\Species;
 use App\Models\User;
+use Database\Seeders\StarterPlantCatalogSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\DB;
 
@@ -54,6 +58,26 @@ it('seeds a complete starter catalog and reuses its records on a second run', fu
 
     expect(array_map(fn (string $table): int => DB::table($table)->count(), $tables))->toBe($counts)
         ->and(Localizable::query()->orderBy('id')->pluck('id')->all())->toBe($translationIds);
+});
+
+it('seeds the plant catalog using existing reference records', function (): void {
+    createRequiredLanguages();
+    $white = Color::factory()->create(['name' => 'White']);
+    $loam = SoilType::factory()->create(['name' => 'Loam']);
+
+    $this->seed(StarterPlantCatalogSeeder::class);
+
+    $plant = Plant::whereName('Rosa rugosa')->sole();
+    $rose = $plant->cultivars()->whereName('Alba')->sole();
+
+    expect($plant->species->genus->family->name)->toBe('Rosaceae')
+        ->and($plant->getTranslation('nl'))->toBe('Rimpelroos')
+        ->and($rose->environment->soilTypes()->sole()->id)->toBe($loam->id)
+        ->and($rose->blooming->colors()->sole()->id)->toBe($white->id)
+        ->and(Language::count())->toBe(2)
+        ->and(SoilType::count())->toBe(1)
+        ->and(Color::count())->toBe(1)
+        ->and(GardenStyle::count())->toBe(0);
 });
 
 it('fills existing starter records without overwriting name translations or seeding custom species', function (): void {

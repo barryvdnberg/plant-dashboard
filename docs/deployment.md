@@ -34,7 +34,7 @@ After migrating and starting the app, choose a [seeding option](../README.md#see
 docker compose --env-file .env.docker exec app php artisan db:seed --force
 ```
 
-For reference data only, run the four commands in the README in order. Prefix each command with `docker compose --env-file .env.docker exec app` and append `--force`.
+With reference data already loaded, add `--class=StarterPlantCatalogSeeder` to run the plant catalog step by itself. For reference data only, run the four commands in the README in order. Prefix each command with `docker compose --env-file .env.docker exec app` and append `--force`.
 
 Set up a persistent queue worker to handle catalog imports and exports. Inside the app container, run `php artisan queue:work`.
 

@@ -14,10 +14,7 @@ class DatabaseSeeder extends Seeder
             ColorSeeder::class,
             GardenStyleSeeder::class,
             SoilTypeSeeder::class,
-            FamilySeeder::class,
-            GenusSeeder::class,
-            SpeciesSeeder::class,
-            PlantSeeder::class,
+            StarterPlantCatalogSeeder::class,
         ]));
     }
 }
