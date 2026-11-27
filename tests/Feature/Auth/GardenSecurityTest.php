@@ -5,6 +5,7 @@ use App\Filament\App\Resources\Gardens\Pages\EditGarden;
 use App\Filament\Resources\Gardens\RelationManagers\PlantsRelationManager;
 use App\Models\Cultivar;
 use App\Models\Garden;
+use App\Models\GardenPlant;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Gate;
@@ -61,6 +62,19 @@ it('authorizes garden and plant records by ownership', function (): void {
     actingAs(User::factory()->admin()->create());
     expect(Gate::allows('update', $other))->toBeTrue()
         ->and(Gate::allows('delete', $plant))->toBeTrue();
+});
+
+it('requires ownership of both gardens when moving a garden plant', function (): void {
+    $own = Garden::factory()->for($this->user)->create();
+    $other = Garden::factory()->create();
+    $ownPlant = GardenPlant::factory()->for($own)->create();
+    $otherPlant = GardenPlant::factory()->for($other)->create();
+
+    expect(Gate::allows('createIn', [GardenPlant::class, $own]))->toBeTrue()
+        ->and(Gate::allows('createIn', [GardenPlant::class, $other]))->toBeFalse()
+        ->and(Gate::allows('moveTo', [$ownPlant, $own]))->toBeTrue()
+        ->and(Gate::allows('moveTo', [$ownPlant, $other]))->toBeFalse()
+        ->and(Gate::allows('moveTo', [$otherPlant, $own]))->toBeFalse();
 });
 
 it('cannot mount another users plant manager directly', function (): void {
