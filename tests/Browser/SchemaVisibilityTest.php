@@ -27,15 +27,20 @@ it('toggles an embedded schema while keeping its children in the between layout'
 
 it('loads a deferred schema into the same visibility wrapper', function (): void {
     $partial = '[wire\\:partial="schema.form.mode.conditional"]';
-    $schema = '[data-testid="conditional-schema"]';
+    $placeholder = $partial.' > [aria-busy]';
+    $schema = $partial.' > [data-testid="conditional-schema"]:not([aria-busy])';
+    $requiredInput = $schema.' input[required]';
 
     Livewire::test(SchemaVisibilityForm::class, ['deferContent' => true])
-        ->assertPresent($partial.' > [aria-busy]')
-        ->assertMissing($partial.' > [aria-busy]')
+        ->assertPresent($placeholder)
+        ->assertMissing($placeholder)
         ->fill('[id="form.mode"]', 'show')
-        ->assertVisible($partial.' > '.$schema)
+        ->assertVisible($schema)
+        ->assertNotPresent($placeholder)
         ->assertCount($partial, 1)
+        ->assertEnabled($requiredInput)
         ->fill('[id="form.mode"]', 'hide')
         ->assertMissing($schema)
+        ->assertDisabled($requiredInput)
         ->assertNoJavaScriptErrors();
 });
