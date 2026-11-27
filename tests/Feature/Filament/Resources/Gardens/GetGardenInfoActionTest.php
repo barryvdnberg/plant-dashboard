@@ -23,7 +23,10 @@ it('loads garden information without halting the request', function (): void {
         'winter_hardiness' => 1,
     ]);
 
+    $action = TestAction::make('getGardenInfo')->schemaComponent('form-actions', schema: 'content');
+
     livewire(EditGarden::class, ['record' => $garden->getKey()])
-        ->callAction(TestAction::make('getGardenInfo')->schemaComponent('form-actions', schema: 'content'))
+        ->assertActionVisible($action)
+        ->callAction($action)
         ->assertHasNoFormErrors();
 });

@@ -1,8 +1,12 @@
 <?php
 
+use App\Filament\Resources\GardenPlants\Pages\CreateGardenPlant;
+use App\Filament\Resources\GardenPlants\Pages\EditGardenPlant;
 use App\Filament\Resources\Gardens\Pages\CreateGarden;
 use App\Filament\Resources\Gardens\Pages\EditGarden;
+use App\Models\Cultivar;
 use App\Models\Garden;
+use App\Models\GardenPlant;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Gate;
@@ -71,4 +75,40 @@ it('separates editing an owned garden from assigning its owner', function (): vo
 
     expect(Gate::allows('update', $garden))->toBeTrue()
         ->and(Gate::allows('assignOwner', Garden::class))->toBeFalse();
+});
+
+it('lets administrators create and move plants in other users gardens', function (): void {
+    $source = Garden::factory()->create();
+    $destination = Garden::factory()->create();
+    $cultivar = Cultivar::factory()->create();
+
+    livewire(CreateGardenPlant::class)
+        ->fillForm(['name' => 'New plant', 'garden_id' => $source->id, 'cultivar_id' => $cultivar->id])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $plant = $source->plants()->sole();
+
+    livewire(EditGardenPlant::class, ['record' => $plant->id])
+        ->fillForm(['garden_id' => $destination->id])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($plant->fresh()->garden_id)->toBe($destination->id);
+});
+
+it('checks the destination when a garden plant is saved', function (): void {
+    $user = User::factory()->create();
+    $source = Garden::factory()->for($user)->create();
+    $destination = Garden::factory()->create();
+    $plant = GardenPlant::factory()->for($source)->create();
+    $component = livewire(EditGardenPlant::class, ['record' => $plant->id]);
+
+    actingAs($user);
+    $component
+        ->fillForm(['garden_id' => $destination->id])
+        ->call('save')
+        ->assertForbidden();
+
+    expect($plant->fresh()->garden_id)->toBe($source->id);
 });
