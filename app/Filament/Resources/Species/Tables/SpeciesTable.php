@@ -52,6 +52,7 @@ class SpeciesTable
             ])
             ->headerActions([
                 ImportAction::make()
+                    ->authorize('import')
                     ->importer(SpeciesImporter::class),
                 ExportAction::make()
                     ->exporter(SpeciesExporter::class),

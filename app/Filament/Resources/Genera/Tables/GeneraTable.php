@@ -52,6 +52,7 @@ class GeneraTable
             ])
             ->headerActions([
                 ImportAction::make()
+                    ->authorize('import')
                     ->importer(GenusImporter::class),
                 ExportAction::make()
                     ->exporter(GenusExporter::class),

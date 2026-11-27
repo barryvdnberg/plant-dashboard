@@ -12,6 +12,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 
 class ImportCultivarAction
@@ -19,6 +20,7 @@ class ImportCultivarAction
     public static function make(): Action
     {
         return Action::make('importCultivar')
+            ->authorize(fn (): bool => Gate::allows('create', Cultivar::class))
             ->label(__('Import data'))
             ->modalHeading(__('Import fields from another cultivar'))
             ->icon(Heroicon::ArrowDownTray)
@@ -58,6 +60,8 @@ class ImportCultivarAction
                 if (! $source) {
                     return;
                 }
+
+                Gate::authorize('view', $source);
 
                 self::import($livewire, $source);
             });

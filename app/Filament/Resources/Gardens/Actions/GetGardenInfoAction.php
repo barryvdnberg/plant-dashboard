@@ -10,6 +10,7 @@ class GetGardenInfoAction
     public static function make(): Action
     {
         return Action::make('getGardenInfo')
+            ->authorize('view')
             ->action(function (Garden $record) {
                 // load the gardenPlants and their cultivar and inside that their environments
                 $record->load('plants.cultivar.environment');

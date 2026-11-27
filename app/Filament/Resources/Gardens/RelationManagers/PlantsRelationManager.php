@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Gardens\RelationManagers;
 
-use App\Filament\Resources\Cultivars\Schemas\CultivarForm;
 use App\Filament\Resources\Cultivars\Tables\CultivarsTable;
 use App\Models\Cultivar;
+use App\Models\GardenPlant;
 use Filament\Actions\Action;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
@@ -22,6 +22,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Gate;
 
 class PlantsRelationManager extends RelationManager
@@ -96,12 +97,18 @@ class PlantsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->before(fn () => Gate::authorize('update', $this->getOwnerRecord())),
+                    ->before(fn () => Gate::authorize('createIn', [GardenPlant::class, $this->getOwnerRecord()])),
                 AssociateAction::make()
-                    ->before(fn () => Gate::authorize('update', $this->getOwnerRecord()))
+                    ->authorize(fn (): bool => ! $this->isReadOnly() && Gate::allows('update', $this->getOwnerRecord()))
                     ->recordSelectOptionsQuery(fn (Builder $query) => $query
                         ->when(! auth()->user()->is_admin, fn (Builder $query) => $query
-                            ->whereHas('garden', fn (Builder $query) => $query->where('user_id', auth()->id())))),
+                            ->whereHas('garden', fn (Builder $query) => $query->where('user_id', auth()->id()))))
+                    ->using(function (GardenPlant $record, BelongsTo $inverseRelationship): bool {
+                        $destination = $this->getOwnerRecord();
+                        Gate::authorize('moveTo', [$record, $destination]);
+
+                        return $inverseRelationship->associate($destination)->save();
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

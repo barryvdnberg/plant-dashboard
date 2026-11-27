@@ -25,6 +25,7 @@ class AppPanelProvider extends PanelProvider
         return $panel
             ->id('app')
             ->path('app')
+            ->strictAuthorization()
             ->login()
             ->colors([
                 'primary' => Color::Green,

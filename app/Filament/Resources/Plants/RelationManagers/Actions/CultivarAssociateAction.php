@@ -8,9 +8,9 @@ use App\Filament\Resources\Plants\RelationManagers\CultivarsRelationManager;
 use App\Models\Cultivar;
 use App\Models\Plant;
 use Filament\Actions\AssociateAction;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class CultivarAssociateAction
@@ -18,6 +18,14 @@ class CultivarAssociateAction
     public static function make(): AssociateAction
     {
         return AssociateAction::make()
+            ->authorize(fn (CultivarsRelationManager $livewire): bool => ! $livewire->isReadOnly() && Gate::allows('update', $livewire->getOwnerRecord()))
+            ->using(function (Cultivar $record, BelongsTo $inverseRelationship, CultivarsRelationManager $livewire): bool {
+                $destination = $livewire->getOwnerRecord();
+                Gate::authorize('update', $destination);
+                Gate::authorize('update', $record);
+
+                return $inverseRelationship->associate($destination)->save();
+            })
             ->preloadRecordSelect()
             ->modelLabel(__('attributes.cultivar'))
             ->recordTitle(fn ($record) => $record->display_name ?? $record->name)

@@ -49,6 +49,7 @@ class FamiliesTable
             ])
             ->headerActions([
                 ImportAction::make()
+                    ->authorize('import')
                     ->importer(FamilyImporter::class),
                 ExportAction::make()
                     ->exporter(FamilyExporter::class),
