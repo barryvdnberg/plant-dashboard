@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-class CatalogPolicy
+abstract class CatalogPolicy
 {
     public function viewAny(User $user): bool
     {
@@ -18,6 +18,11 @@ class CatalogPolicy
     }
 
     public function create(User $user): bool
+    {
+        return $user->is_admin;
+    }
+
+    public function import(User $user): bool
     {
         return $user->is_admin;
     }

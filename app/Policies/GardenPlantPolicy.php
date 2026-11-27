@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Garden;
 use App\Models\GardenPlant;
 use App\Models\User;
 
@@ -12,10 +13,14 @@ class GardenPlantPolicy
         return true;
     }
 
-    // The relation manager also authorizes the destination garden.
     public function create(User $user): bool
     {
         return true;
+    }
+
+    public function createIn(User $user, Garden $garden): bool
+    {
+        return $this->create($user) && $user->can('update', $garden);
     }
 
     public function view(User $user, GardenPlant $plant): bool
@@ -26,6 +31,11 @@ class GardenPlantPolicy
     public function update(User $user, GardenPlant $plant): bool
     {
         return $this->view($user, $plant);
+    }
+
+    public function moveTo(User $user, GardenPlant $plant, Garden $destination): bool
+    {
+        return $this->update($user, $plant) && $user->can('update', $destination);
     }
 
     public function delete(User $user, GardenPlant $plant): bool

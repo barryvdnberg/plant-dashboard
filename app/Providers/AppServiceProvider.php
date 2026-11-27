@@ -3,22 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Color;
-use App\Models\Cultivar;
-use App\Models\Family;
-use App\Models\GardenStyle;
-use App\Models\Genus;
-use App\Models\Language;
-use App\Models\Localizable;
-use App\Models\Plant;
-use App\Models\SoilType;
-use App\Models\Species;
-use App\Policies\CatalogPolicy;
 use App\Support\ColorTag;
 use App\Support\NameDisplayPreferences;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Support\Facades\FilamentColor;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -37,21 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        foreach ([
-            Color::class,
-            Cultivar::class,
-            Family::class,
-            GardenStyle::class,
-            Genus::class,
-            Language::class,
-            Localizable::class,
-            Plant::class,
-            SoilType::class,
-            Species::class,
-        ] as $model) {
-            Gate::policy($model, CatalogPolicy::class);
-        }
-
         Select::configureUsing(function (Select $select): void {
             $select
                 ->searchable();
