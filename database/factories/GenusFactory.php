@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Family;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +18,7 @@ class GenusFactory extends Factory
     public function definition(): array
     {
         return [
+            'family_id' => Family::factory(),
             'name' => $this->faker->word,
             'image_paths' => []
         ];
